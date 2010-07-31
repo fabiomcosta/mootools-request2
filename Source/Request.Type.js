@@ -132,7 +132,7 @@ Request.Type = new Class({
 */
 
 	options: {
-		type: null // 'javascript' or 'json' or 'xml' or 'html' or falsy value for autodetection
+		type: null // 'script' or 'json' or 'xml' or 'html' or falsy value for autodetection
 	},
 	
 	initialize: function(options){
@@ -160,7 +160,7 @@ Request.Type = new Class({
 	contentTypes: {},
 	acceptHeaders: {},
 	
-	addResponseProcessor: function(type, contentTypes, responseProcessor){
+	defineResponseProcessor: function(type, contentTypes, responseProcessor){
 		contentTypes = Array.from(contentTypes);
 		for (var i = contentTypes.length; i--;) this.contentTypes[contentTypes[i]] = type;
 		this.acceptHeaders[type] = contentTypes.join(', ');
@@ -170,7 +170,7 @@ Request.Type = new Class({
 	
 });
 
-Request.Type.addResponseProcessor('json', ['application/json', 'text/javascript'], function(text){
+Request.Type.defineResponseProcessor('json', ['application/json', 'text/javascript'], function(text){
 
 
 	var secure = this.options.secure;
@@ -184,7 +184,7 @@ Request.Type.addResponseProcessor('json', ['application/json', 'text/javascript'
 	this.onSuccess(json, text);
 
 
-}).addResponseProcessor('xml', ['text/xml', 'application/xml'], function(text, xml){
+}).defineResponseProcessor('xml', ['text/xml', 'application/xml'], function(text, xml){
 
 
 	if (xml){
@@ -200,7 +200,7 @@ Request.Type.addResponseProcessor('json', ['application/json', 'text/javascript'
 	this.onSuccess(xml, text);
 
 
-}).addResponseProcessor('html', ['text/html'], function(text){
+}).defineResponseProcessor('html', ['text/html'], function(text){
 	
 	
 	var options = this.options, response = this.response;
@@ -224,7 +224,7 @@ Request.Type.addResponseProcessor('json', ['application/json', 'text/javascript'
 	this.onSuccess(response.tree, response.elements, response.html, response.javascript);
 
 	
-}).addResponseProcessor('script', ['text/javascript', 'application/javascript'], function(text){
+}).defineResponseProcessor('script', ['text/javascript', 'application/javascript'], function(text){
 	
 	// no need for evalResponse anymore
 	Browser.exec(text);
