@@ -6,26 +6,97 @@ License:
 	MIT-style license.
 */
 
-describe('Request', function(){
+describe('Request.Type', function(){
 
-	it('should create an ajax request', function(){
+	beforeEach(function(){
+		this.spy = jasmine.createSpy();
+	});
+
+	it('should create an ajax request with the response forced to be of type text', function(){
 
 		runs(function(){
-			this.onComplete = jasmine.createSpy();
-			this.request = new Request({
+			this.request = new Request.Type({
+				type: 'text',
 				url: '../Helpers/request.php',
-				onComplete: this.onComplete
+				onComplete: this.spy
 			}).send({data: {
-				'__response': 'response'
+				'__response': 'response', '__type': 'text'
 			}});
 		});
 		
 		waitsFor(800, function(){
-			return this.onComplete.wasCalled;
+			return this.spy.wasCalled;
 		});
 		
 		runs(function(){
-			expect(this.onComplete).toHaveBeenCalledWith('response', null);
+			expect(this.spy).toHaveBeenCalledWith('response', null);
+		});
+		
+	});
+	
+	it('should create an ajax request and detect the correct type of the response (json)', function(){
+
+		runs(function(){
+			this.request = new Request.Type({
+				url: '../Helpers/request.php',
+				onComplete: this.spy
+			}).send({data: {
+				'__response': '{"some": "json"}', '__type': 'json'
+			}});
+		});
+		
+		waitsFor(800, function(){
+			return this.spy.wasCalled;
+		});
+		
+		runs(function(){
+			expect(this.spy).toHaveBeenCalledWith({'some': 'json'}, '{"some": "json"}');
+		});
+		
+	});
+
+	it('should create an ajax request and detect the correct type of the response (html)', function(){
+		
+		runs(function(){
+			this.request = new Request.Type({
+				url: '../Helpers/request.php',
+				onComplete: this.spy
+			}).send({data: {
+				'__response': '<body><div></div></body>', '__type': 'html'
+			}});
+		});
+		
+		waitsFor(800, function(){
+			return this.spy.wasCalled;
+		});
+		
+		runs(function(){
+			var response = this.request.response;
+			expect(this.spy).toHaveBeenCalledWith(response.tree, response.elements, response.html, response.javascript);
+		});
+		
+	});
+	
+	
+	it('should create an ajax request and detect the correct type of the response (script)', function(){
+		
+		runs(function(){
+			this.request = new Request.Type({
+				url: '../Helpers/request.php',
+				onComplete: this.spy
+			}).send({data: {
+				'__response': 'var __global__var__ = 10;', '__type': 'script'
+			}});
+		});
+		
+		waitsFor(800, function(){
+			return this.spy.wasCalled;
+		});
+		
+		runs(function(){
+			var response = this.request.response;
+			expect(this.spy).toHaveBeenCalledWith('var __global__var__ = 10;');
+			expect(__global__var__).toEqual(10);
 		});
 		
 	});
