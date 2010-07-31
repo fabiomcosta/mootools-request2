@@ -20,7 +20,7 @@ $content_types = array(
 	'json'	=> 'application/json',
 	'script' => 'application/javascript'
 );
-$content_types['script'] = $content_types['javascript'];
+$content_types['javascript'] = $content_types['script'];
 
 
 check_special_parameter('sleep', 0); // you can define the default sleep time by passing the '__sleep' variable (get or post)
