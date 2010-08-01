@@ -1,25 +1,128 @@
 /*
 ---
 
-name: Request.Type
+name: Request
 
-description: Extends the basic Request Class with additional methods for interacting with any type of response.
+description: Powerful all purpose Request Class. Uses XMLHTTPRequest.
 
 license: MIT-style license.
 
-requires: [Element, Request]
+requires: [Object, Element, Chain, Events, Options, Browser]
 
-provides: Request.Type
+provides: Request
 
 ...
 */
 
-Request = new Class({
-	Extends: Request,
+(function(global, document){
+
+
+var Request = global.Request = new Class({
+
+	Implements: [Chain, Events, Options],
+
+	options: {/*
+		onRequest: nil,
+		onComplete: nil,
+		onCancel: nil,
+		onSuccess: nil,
+		onFailure: nil,
+		onException: nil,*/
+		isSuccess: function(){
+			return ((this.status >= 200) && (this.status < 300));
+		},
+		url: location.href,
+		data: '',
+		headers: {
+			'X-Requested-With': 'XMLHttpRequest'
+		},
+		async: true,
+		method: 'post',
+		link: 'ignore',
+		urlEncoded: true,
+		encoding: 'utf-8',
+		evalScripts: false,
+		noCache: false,
+		
+		filter: '>', // children elements
+		appendData: '',
+		timeout: false,
+		type: null // 'script' or 'json' or 'xml' or 'html' or falsy value for autodetection
+	},
+
+	initialize: function(options){
+		this.xhr = new Browser.Request();
+		this.setOptions(options);
+		var requestType = this.$constructor;
+		this.headers = this.options.headers;
+		this.headers.Accept = requestType.acceptHeaders[this.options.type || '*/*'];
+		this.responseProcessor = requestType.responseProcessors[this.options.type];
+	},
+
+	onStateChange: function(){
+		if (this.xhr.readyState != 4 || !this.running) return;
+		this.running = false;
+		this.status = 0;
+		Function.attempt(function(){
+			this.status = this.xhr.status;
+		}.bind(this));
+		this.xhr.onreadystatechange = function(){};
+		if (this.options.isSuccess.call(this, this.status)){
+			this.response = {text: (this.xhr.responseText || ''), xml: this.xhr.responseXML};
+			this.success(this.response.text, this.response.xml);
+		} else {
+			this.response = {text: null, xml: null};
+			this.failure();
+		}
+	},
+
+	success: function(text, xml){
+		var requestType = this.$constructor, responseProcessor = this.responseProcessor;
+		if (!responseProcessor){
+			responseProcessor = requestType.responseProcessors[requestType.contentTypes[this.getHeader('Content-Type')]];
+		} 
+		if (responseProcessor){
+			responseProcessor.call(this, text, xml);
+		} else {
+			this.onSuccess(text, xml);
+		}
+	},
+
+	onSuccess: function(){
+		this.fireEvent('complete', arguments).fireEvent('success', arguments).callChain();
+	},
+
+	failure: function(){
+		this.onFailure();
+	},
+
+	onFailure: function(){
+		this.fireEvent('complete').fireEvent('failure', this.xhr);
+	},
+
+	setHeader: function(name, value){
+		this.headers[name] = value;
+		return this;
+	},
+
+	getHeader: function(name){
+		return Function.attempt(function(){
+			return this.xhr.getResponseHeader(name);
+		}.bind(this));
+	},
+
+	check: function(){
+		if (!this.running) return true;
+		switch (this.options.link){
+			case 'cancel': this.cancel(); return true;
+			case 'chain': this.chain(this.caller.bind(this, arguments)); return false;
+		}
+		return false;
+	},
+
 	send: function(options){
 		if (!this.check(options)) return this;
 
-		this.options.isSuccess = this.options.isSuccess || this.isSuccess;
 		this.running = true;
 
 		var type = typeOf(options);
@@ -33,13 +136,13 @@ Request = new Class({
 			case 'element': data = document.id(data).toQueryString(); break;
 			case 'object': case 'hash': data = Object.toQueryString(data);
 		}
-		
+
 		// whats this?
 		//if (this.options.format){
 		//	var format = 'format=' + this.options.format;
 		//	data = (data) ? format + '&' + data : format;
 		//}
-		
+
 		//if (this.options.emulation && !['get', 'post'].contains(method)){
 		// why the emulation option?
 		if (!['get', 'post'].contains(method)){
@@ -50,7 +153,7 @@ Request = new Class({
 
 		if (this.options.urlEncoded && method == 'post'){
 			var encoding = (this.options.encoding) ? '; charset=' + this.options.encoding : '';
-			this.headers['Content-type'] = 'application/x-www-form-urlencoded' + encoding;
+			this.headers['Content-Type'] = 'application/x-www-form-urlencoded' + encoding;
 		}
 
 		if (this.options.noCache){
@@ -71,7 +174,7 @@ Request = new Class({
 		this.xhr.onreadystatechange = this.onStateChange.bind(this);
 
 		// firing an exception with a meaninful error message
-		var exception = Request.exception.SET_REQUEST_HEADER;
+		var exception = this.$constructor.exception.SET_REQUEST_HEADER;
 		Object.each(this.headers, function(value, key){
 			try {
 				this.xhr.setRequestHeader(key, value);
@@ -84,10 +187,20 @@ Request = new Class({
 		this.xhr.send(data);
 		if (!this.options.async) this.onStateChange();
 		return this;
-	}
-});
+	},
 
-Request.extend({
+	cancel: function(){
+		if (!this.running) return this;
+		this.running = false;
+		this.xhr.abort();
+		this.xhr.onreadystatechange = function(){};
+		this.xhr = new Browser.Request();
+		this.fireEvent('cancel');
+		return this;
+	}
+
+}).extend({
+
 	exception: {
 		SET_REQUEST_HEADER: {
 			status: 1,
@@ -101,62 +214,8 @@ Request.extend({
 			status: 3,
 			message: 'Error while parsing the JSON response'
 		}
-	}
-});
-
-Request.Type = new Class({
-
-	Extends: Request,
-	
-/*
-	onRequest: nil,
-	onComplete: nil,
-	onCancel: nil,
-	onSuccess: nil,
-	onFailure: nil,
-	onException: nil,
-	url: '',
-	data: '',
-	appendData: '', // should be used just on the send method to add data to the current data object
-	headers: {
-		'X-Requested-With': 'XMLHttpRequest'
 	},
-	async: true,
-	method: 'post',
-	link: 'ignore',
-	isSuccess: null,
-	urlEncoded: true,
-	encoding: 'utf-8',
-	evalScripts: false,
-	noCache: false,
-	timeout: false
-*/
 
-	options: {
-		type: null // 'script' or 'json' or 'xml' or 'html' or falsy value for autodetection
-	},
-	
-	initialize: function(options){
-		this.parent(options);
-		var requestType = this.$constructor;
-		this.headers.Accept = requestType.acceptHeaders[this.options.type || '*/*'];
-		this.responseProcessor = requestType.responseProcessors[this.options.type];
-	},
-	
-	success: function(text, xml){
-		var requestType = this.$constructor, responseProcessor = this.responseProcessor;
-		if (!responseProcessor){
-			responseProcessor = requestType.responseProcessors[requestType.contentTypes[this.getHeader('Content-Type')]];
-		} 
-		if (responseProcessor){
-			responseProcessor.call(this, text, xml);
-		} else {
-			this.onSuccess(text, xml);
-		}
-	}
-	
-}).extend({
-	
 	responseProcessors: {},
 	contentTypes: {},
 	acceptHeaders: {},
@@ -169,9 +228,7 @@ Request.Type = new Class({
 		return this;
 	}
 	
-});
-
-Request.Type.defineResponseProcessor('json', ['application/json', 'text/javascript'], function(text){
+}).defineResponseProcessor('json', ['application/json', 'text/javascript'], function(text){
 
 
 	var secure = this.options.secure;
@@ -180,7 +237,7 @@ Request.Type.defineResponseProcessor('json', ['application/json', 'text/javascri
 	});
 	if (json == null){
 		// TODO, use a try catch to get the error message from the parsed JSON to give a better feedback
-		var exception = Request.exception.JSON_PARSING;
+		var exception = this.$constructor.exception.JSON_PARSING;
 		this.fireEvent('exception', [exception.status, exception.message]);
 	}
 	this.onSuccess(json, text);
@@ -194,7 +251,7 @@ Request.Type.defineResponseProcessor('json', ['application/json', 'text/javascri
 		var errorMsg = (root && root.nodeName == 'parsererror') ? root.textContent :
 			(parseError && parseError.reason) ? parseError.reason : '';
 		if (!root || errorMsg){
-			var exception = Request.exception.XML_PARSING;
+			var exception = this.$constructor.exception.XML_PARSING;
 			this.fireEvent('exception', [exception.status, exception.message.substitute([errorMsg])]);
 			xml = null;
 		}
@@ -216,7 +273,7 @@ Request.Type.defineResponseProcessor('json', ['application/json', 'text/javascri
 	
 	// TODO, should work with table and option responses (tbody, td, tr, option ....)
 	var temp = new Element('div').set('html', response.html);
-	response.tree = temp.getChildren();
+	response.tree = temp.getElements(options.filter);
 
 	if (options.evalScripts) Browser.exec(response.javascript);
 
@@ -231,3 +288,5 @@ Request.Type.defineResponseProcessor('json', ['application/json', 'text/javascri
 	
 });
 
+
+})(window || this, document);

@@ -2,7 +2,7 @@
 
 var Configuration = context.Configuration = {};
 
-Configuration.name = 'Request.Type for Mootools 2',
+Configuration.name = 'Request for Mootools 2',
 
 Configuration.presets = [
 	{
@@ -15,7 +15,7 @@ Configuration.presets = [
 Configuration.sets = {
 
 	'2client': [
-		'Request/Request.Type',
+		'Request/Request'
 	]
 
 };
@@ -24,7 +24,7 @@ Configuration.source = {
 
 	'2': {
 		'client': [
-			'Mootools-1.3dev', 'Request.Type',
+			'Mootools-1.3dev', 'Request',
 		]
 	}
 
