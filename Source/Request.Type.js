@@ -33,12 +33,13 @@ Request = new Class({
 			case 'element': data = document.id(data).toQueryString(); break;
 			case 'object': case 'hash': data = Object.toQueryString(data);
 		}
-
-		if (this.options.format){
-			var format = 'format=' + this.options.format;
-			data = (data) ? format + '&' + data : format;
-		}
-
+		
+		// whats this?
+		//if (this.options.format){
+		//	var format = 'format=' + this.options.format;
+		//	data = (data) ? format + '&' + data : format;
+		//}
+		
 		//if (this.options.emulation && !['get', 'post'].contains(method)){
 		// why the emulation option?
 		if (!['get', 'post'].contains(method)){
@@ -106,6 +107,7 @@ Request.extend({
 Request.Type = new Class({
 
 	Extends: Request,
+	
 /*
 	onRequest: nil,
 	onComplete: nil,
@@ -115,20 +117,19 @@ Request.Type = new Class({
 	onException: nil,
 	url: '',
 	data: '',
+	appendData: '', // should be used just on the send method to add data to the current data object
 	headers: {
 		'X-Requested-With': 'XMLHttpRequest'
 	},
 	async: true,
-	format: false,
 	method: 'post',
 	link: 'ignore',
 	isSuccess: null,
-	emulation: true,
 	urlEncoded: true,
 	encoding: 'utf-8',
 	evalScripts: false,
-	evalResponse: false,
-	noCache: false
+	noCache: false,
+	timeout: false
 */
 
 	options: {
@@ -138,7 +139,7 @@ Request.Type = new Class({
 	initialize: function(options){
 		this.parent(options);
 		var requestType = this.$constructor;
-		this.headers.Accept = requestType.contentTypes[this.options.type || '*/*'];
+		this.headers.Accept = requestType.acceptHeaders[this.options.type || '*/*'];
 		this.responseProcessor = requestType.responseProcessors[this.options.type];
 	},
 	
@@ -178,6 +179,7 @@ Request.Type.defineResponseProcessor('json', ['application/json', 'text/javascri
 		return JSON.decode(text, secure);
 	});
 	if (json == null){
+		// TODO, use a try catch to get the error message from the parsed JSON to give a better feedback
 		var exception = Request.exception.JSON_PARSING;
 		this.fireEvent('exception', [exception.status, exception.message]);
 	}
@@ -212,16 +214,13 @@ Request.Type.defineResponseProcessor('json', ['application/json', 'text/javascri
 	var match = response.html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
 	if (match) response.html = match[1];
 	
+	// TODO, should work with table and option responses (tbody, td, tr, option ....)
 	var temp = new Element('div').set('html', response.html);
-	response.tree = temp.childNodes;
-	response.elements = temp.getElements('*');
+	response.tree = temp.getChildren();
 
-	if (options.filter) response.tree = response.elements.filter(options.filter);
-	if (options.update) document.id(options.update).empty().set('html', response.html);
-	else if (options.append) document.id(options.append).adopt(temp.getChildren());
 	if (options.evalScripts) Browser.exec(response.javascript);
 
-	this.onSuccess(response.tree, response.elements, response.html, response.javascript);
+	this.onSuccess(response.tree, response.html, response.javascript);
 
 	
 }).defineResponseProcessor('script', ['text/javascript', 'application/javascript'], function(text){
