@@ -16,6 +16,8 @@ provides: Request
 
 (function(global, document){
 
+var baseMethods = {'get': 1, 'post': 1};
+var emptyFunction = function(){};
 
 var Request = global.Request = new Class({
 
@@ -41,7 +43,14 @@ var Request = global.Request = new Class({
 		link: 'ignore',
 		urlEncoded: true,
 		encoding: 'utf-8',
+		
+		
+		// this option shoudnt be a boolean because sometimes you need the scripts to be evaluated after
+		// you do some manipulation with the response.tree of response.html. The evaluation can be done
+		// 'after' or 'before' the onsuccess event. true will evaluate before for compatibility
+		// or maybe this options should just be remove for simplicity.
 		evalScripts: false,
+		
 		noCache: false,
 		
 		filter: '>', // children elements
@@ -55,8 +64,6 @@ var Request = global.Request = new Class({
 		this.setOptions(options);
 		var requestType = this.$constructor;
 		this.headers = this.options.headers;
-		this.headers.Accept = requestType.acceptHeaders[this.options.type || '*/*'];
-		this.responseProcessor = requestType.responseProcessors[this.options.type];
 	},
 
 	onStateChange: function(){
@@ -77,10 +84,9 @@ var Request = global.Request = new Class({
 	},
 
 	success: function(text, xml){
-		var requestType = this.$constructor, responseProcessor = this.responseProcessor;
-		if (!responseProcessor){
-			responseProcessor = requestType.responseProcessors[requestType.contentTypes[this.getHeader('Content-Type')]];
-		} 
+		var requestClass = this.$constructor, responseProcessor = this.responseProcessor;
+		responseProcessor = requestClass.responseProcessors[this.options.type || requestClass.contentTypes[this.getHeader('Content-Type')]];
+		
 		if (responseProcessor){
 			responseProcessor.call(this, text, xml);
 		} else {
@@ -134,7 +140,7 @@ var Request = global.Request = new Class({
 
 		switch (typeOf(data)){
 			case 'element': data = document.id(data).toQueryString(); break;
-			case 'object': case 'hash': data = Object.toQueryString(data);
+			case 'object': data = Object.toQueryString(data);
 		}
 
 		// whats this?
@@ -145,7 +151,7 @@ var Request = global.Request = new Class({
 
 		//if (this.options.emulation && !['get', 'post'].contains(method)){
 		// why the emulation option?
-		if (!['get', 'post'].contains(method)){
+		if (!baseMethods[method]){
 			var _method = '_method=' + method;
 			data = (data) ? _method + '&' + data : _method;
 			method = 'post';
@@ -155,7 +161,10 @@ var Request = global.Request = new Class({
 			var encoding = (this.options.encoding) ? '; charset=' + this.options.encoding : '';
 			this.headers['Content-Type'] = 'application/x-www-form-urlencoded' + encoding;
 		}
-
+		
+		var requestClass = this.$constructor;
+		this.setHeader('Accept', requestClass.acceptHeaders[this.options.type] || '*/*');
+		
 		if (this.options.noCache){
 			var noCache = 'noCache=' + new Date().getTime();
 			data = (data) ? noCache + '&' + data : noCache;
@@ -193,11 +202,36 @@ var Request = global.Request = new Class({
 		if (!this.running) return this;
 		this.running = false;
 		this.xhr.abort();
-		this.xhr.onreadystatechange = function(){};
+		this.xhr.onreadystatechange = emptyFunction;
 		this.xhr = new Browser.Request();
 		this.fireEvent('cancel');
 		return this;
-	}
+	},
+	
+	parseXML: (function(){
+		
+		if (global.DOMParser){
+			var domParser = new DOMParser();
+			return function(text){
+				return domParser.parseFromString(text, 'text/xml');
+			};
+		}
+
+		var xml = Function.attempt(function(){
+			return new ActiveXObject('MSXML2.DOMDocument');
+		}, function(){
+			return new ActiveXObject('Microsoft.XMLDOM');
+		});
+		if (xml) xml.async = 'false';
+		
+		return function(text){
+			if (xml){
+				xml.loadXML(text);
+				return xml;
+			}
+			return null;
+		};
+	})()
 
 }).extend({
 
@@ -212,7 +246,7 @@ var Request = global.Request = new Class({
 		},
 		JSON_PARSING: {
 			status: 3,
-			message: 'Error while parsing the JSON response'
+			message: 'Error while parsing the JSON response: {0}'
 		}
 	},
 
@@ -220,71 +254,95 @@ var Request = global.Request = new Class({
 	contentTypes: {},
 	acceptHeaders: {},
 	
-	defineResponseProcessor: function(type, contentTypes, responseProcessor){
-		contentTypes = Array.from(contentTypes);
+	defineResponseType: function(type, options){
+		contentTypes = Array.from(options.contentTypes);
 		for (var i = contentTypes.length; i--;) this.contentTypes[contentTypes[i]] = type;
-		this.acceptHeaders[type] = contentTypes.join(', ');
-		this.responseProcessors[type] = responseProcessor;
+		this.acceptHeaders[type] = contentTypes.join(', ') + ', */*';
+		this.responseProcessors[type] = options.processor;
 		return this;
 	}
 	
-}).defineResponseProcessor('json', ['application/json', 'text/javascript'], function(text){
+}).defineResponseType('json', {
+	
+	contentTypes: 'application/json',
+	processor: function(text){
 
-
-	var secure = this.options.secure;
-	var json = this.response.json = Function.attempt(function(){
-		return JSON.decode(text, secure);
-	});
-	if (json == null){
-		// TODO, use a try catch to get the error message from the parsed JSON to give a better feedback
-		var exception = this.$constructor.exception.JSON_PARSING;
-		this.fireEvent('exception', [exception.status, exception.message]);
-	}
-	this.onSuccess(json, text);
-
-
-}).defineResponseProcessor('xml', ['text/xml', 'application/xml'], function(text, xml){
-
-
-	if (xml){
-		var root = xml.documentElement, parseError = xml.parseError;
-		var errorMsg = (root && root.nodeName == 'parsererror') ? root.textContent :
-			(parseError && parseError.reason) ? parseError.reason : '';
-		if (!root || errorMsg){
-			var exception = this.$constructor.exception.XML_PARSING;
-			this.fireEvent('exception', [exception.status, exception.message.substitute([errorMsg])]);
-			xml = null;
+		var secure = this.options.secure, json;
+		try {
+			json = this.response.json = JSON.decode(text, secure);
+		} catch (e){
+			var exception = this.$constructor.exception.JSON_PARSING;
+			this.fireEvent('exception', [exception.status, exception.message.substitute([e || ''])]);
 		}
+		this.onSuccess(json, text);
+		
 	}
-	this.onSuccess(xml, text);
-
-
-}).defineResponseProcessor('html', ['text/html'], function(text){
 	
+}).defineResponseType('xml', {
 	
-	var options = this.options, response = this.response;
+	contentTypes: ['text/xml', 'application/xml'],
+	processor: function(text, xml){
 
-	response.html = text.stripScripts(function(script){
-		response.javascript = script;
-	}); 
+		var root = xml && xml.documentElement;
+		if (!xml || !root){
+			xml = this.parseXML(text);
+			root = xml && xml.documentElement;
+		}
+		
+		if (xml){
+			var parseError = xml.parseError;
+			var firstChild = root && root.firstChild;
+			var errorMsg = (root && root.nodeName == 'parsererror' || firstChild && firstChild.nodeName == 'parsererror') ? root.textContent :
+				(parseError && parseError.reason) ? parseError.reason : '';
+			if (!root || errorMsg){
+				var exception = this.$constructor.exception.XML_PARSING;
+				this.fireEvent('exception', [exception.status, exception.message.substitute([errorMsg])]);
+				xml = null;
+			}
+		}
 
-	var match = response.html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
-	if (match) response.html = match[1];
+		this.response.xml = xml;
+		this.onSuccess(xml, text);
+
+	}
 	
-	// TODO, should work with table and option responses (tbody, td, tr, option ....)
-	var temp = new Element('div').set('html', response.html);
-	response.tree = temp.getElements(options.filter);
-
-	if (options.evalScripts) Browser.exec(response.javascript);
-
-	this.onSuccess(response.tree, response.html, response.javascript);
-
+}).defineResponseType('html', {
 	
-}).defineResponseProcessor('script', ['text/javascript', 'application/javascript'], function(text){
+	contentTypes: ['text/html', 'application/html'],
+	processor: function(text){
+
+		var options = this.options, response = this.response;
+
+		response.html = text.stripScripts(function(script){
+			response.javascript = script;
+		}); 
+
+		var match = response.html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+		if (match) response.html = match[1];
+
+		// TODO, should work with table and option responses (tbody, td, tr, option ....)
+		var temp = new Element('div').set('html', response.html);
+		response.tree = temp.getElements(options.filter);
+
+		var evalScripts = options.evalScripts;
+		if (evalScripts === true || evalScripts == 'before') Browser.exec(response.javascript);
+
+		this.onSuccess(response.tree, response.html, response.javascript);
+
+		if (evalScripts == 'after') Browser.exec(response.javascript);
+
+	}
 	
-	// no need for evalResponse anymore
-	Browser.exec(text);
-	this.onSuccess(text);
+}).defineResponseType('script', {
+	
+	contentTypes: ['text/javascript', 'application/javascript'],
+	processor: function(text){
+
+		// no need for evalResponse anymore
+		Browser.exec(text);
+		this.onSuccess(text);
+
+	}
 	
 });
 
