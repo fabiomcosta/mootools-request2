@@ -23,4 +23,4 @@ Todo
 
 * implement the timeout functionality
 * implement the appendData option on the send method
-* 
+* improve the extensibility of the url generation (generate on a separate method, other than send)
