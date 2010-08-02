@@ -335,7 +335,7 @@ var Request = global.Request = new Class({
 	
 }).defineResponseType('script', {
 	
-	contentTypes: ['text/javascript', 'application/javascript'],
+	contentTypes: ['text/javascript', 'application/javascript', 'application/x-javascript'],
 	processor: function(text){
 
 		// no need for evalResponse anymore

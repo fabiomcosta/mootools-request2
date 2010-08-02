@@ -29,7 +29,7 @@ check_special_parameter('type', NULL);
 check_special_parameter('retrieve', NULL);
 
 
-header('Content-Type: ' . (isset($content_types[$type]) ? $content_types[$type] : $type));
+if ($type !== NULL) header('Content-Type: ' . (isset($content_types[$type]) ? $content_types[$type] : $type));
 
 
 sleep($sleep);
