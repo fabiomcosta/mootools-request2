@@ -24,12 +24,12 @@ var Request = global.Request = new Class({
 	Implements: [Chain, Events, Options],
 
 	options: {/*
-		onRequest: nil,
-		onComplete: nil,
-		onCancel: nil,
-		onSuccess: nil,
-		onFailure: nil,
-		onException: nil,*/
+		onRequest: ,
+		onComplete: ,
+		onCancel: ,
+		onSuccess: ,
+		onFailure: ,
+		onException: ,*/
 		isSuccess: function(){
 			return ((this.status >= 200) && (this.status < 300));
 		},
@@ -73,7 +73,7 @@ var Request = global.Request = new Class({
 		Function.attempt(function(){
 			this.status = this.xhr.status;
 		}.bind(this));
-		this.xhr.onreadystatechange = function(){};
+		this.xhr.onreadystatechange = emptyFunction;
 		if (this.options.isSuccess.call(this, this.status)){
 			this.response = {text: (this.xhr.responseText || ''), xml: this.xhr.responseXML};
 			this.success(this.response.text, this.response.xml);
@@ -320,9 +320,7 @@ var Request = global.Request = new Class({
 		var match = response.html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
 		if (match) response.html = match[1];
 
-		// TODO, should work with table and option responses (tbody, td, tr, option ....)
-		var temp = new Element('div').set('html', response.html);
-		response.tree = temp.getElements(options.filter);
+		response.tree = Elements.from(response.html, true, options.filter);
 
 		var evalScripts = options.evalScripts;
 		if (evalScripts === true || evalScripts == 'before') Browser.exec(response.javascript);

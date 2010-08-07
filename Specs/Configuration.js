@@ -24,7 +24,7 @@ Configuration.source = {
 
 	'2': {
 		'client': [
-			'Mootools-1.3dev', 'Request',
+			'Mootools-1.3dev', 'Elements.From', 'Request',
 		]
 	}
 
