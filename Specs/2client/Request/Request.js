@@ -410,7 +410,7 @@ describe('Request', function(){
 		
 		});
 		
-		it('should create an ajax request ignoring the others that are called while theres one runing', function(){
+		it('should create an ajax request ignoring the others that are called while theres one running', function(){
 		
 			var responseText = 'response';
 		
@@ -437,7 +437,39 @@ describe('Request', function(){
 		
 		});
 		
-
+	});
+	
+	
+	
+	
+	describe('data option', function(){
+		
+		it('should send the data from a form element', function(){
+			
+			var form = new Element('form', {
+				'action': '',
+				'html': '<input name="input" value="input-value" /><input name="__type" value="text" />'
+			});
+			
+			runs(function(){
+				this.request = new Request({
+					method: 'post',
+					url: '../Helpers/request.php',
+					data: form,
+					onComplete: this.spy
+				}).send();
+			});
+		
+			waitsFor(800, function(){
+				return this.spy.wasCalled;
+			});
+		
+			runs(function(){
+				expect(this.spy).toHaveBeenCalledWith('{"method":"post","post":{"input":"input-value"}}', null);
+			});
+			
+		});
+		
 	});
 	
 

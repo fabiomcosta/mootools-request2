@@ -41,7 +41,7 @@ var Request = global.Request = new Class({
 		method: 'post',
 		link: 'ignore',
 		urlEncoded: true,
-		encoding: 'utf-8',
+		encoding: 'UTF-8',
 		
 		
 		// this option shoudnt be a boolean because sometimes you need the scripts to be evaluated after
@@ -137,7 +137,7 @@ var Request = global.Request = new Class({
 
 		var old = this.options;
 		options = Object.append({data: old.data, url: old.url, method: old.method}, options);
-		var data = options.data, url = String(options.url), method = options.method.toLowerCase();
+		var data = options.data, url = '' + options.url, method = options.method.toLowerCase();
 
 		switch (typeOf(data)){
 			case 'element': data = document.id(data).toQueryString(); break;
@@ -152,11 +152,11 @@ var Request = global.Request = new Class({
 
 		//if (this.options.emulation && !['get', 'post'].contains(method)){
 		// why the emulation option?
-		if (!baseMethods[method]){
-			var _method = '_method=' + method;
-			data = (data) ? _method + '&' + data : _method;
-			method = 'post';
-		}
+		//if (!baseMethods[method]){
+		//	var _method = '_method=' + method;
+		//	data = (data) ? _method + '&' + data : _method;
+		//	method = 'post';
+		//}
 		
 		if (this.options.urlEncoded && method == 'post'){
 			var encoding = (this.options.encoding) ? '; charset=' + this.options.encoding : '';
@@ -171,7 +171,8 @@ var Request = global.Request = new Class({
 		var trimPosition = url.lastIndexOf('/');
 		if (trimPosition > -1 && (trimPosition = url.indexOf('#')) > -1) url = url.substr(0, trimPosition);
 		
-		if (data && method == 'get'){
+		// http://www.w3.org/TR/XMLHttpRequest/#the-send-method
+		if (data && (method == 'get' || method == 'head')){
 			url = url + (url.contains('?') ? '&' : '?') + data;
 			data = null;
 		}
@@ -196,6 +197,7 @@ var Request = global.Request = new Class({
 		}, this);
 
 		this.fireEvent('request');
+		
 		this.xhr.send(data);
 		if (!this.options.async) this.onStateChange();
 		return this;
