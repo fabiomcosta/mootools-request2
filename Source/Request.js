@@ -17,7 +17,6 @@ provides: Request
 (function(global, document){
 
 var baseMethods = {'get': 1, 'post': 1};
-var emptyFunction = function(){};
 
 var Request = global.Request = new Class({
 
@@ -54,26 +53,26 @@ var Request = global.Request = new Class({
 		noCache: false,
 		
 		filter: '>', // children elements
-		appendData: '',
-		timeout: false,
+		appendData: '', // TODO
+		timeout: false, // TODO
 		type: null // 'script' or 'json' or 'xml' or 'html' or falsy value for autodetection
 	},
 
 	initialize: function(options){
 		this.xhr = new Browser.Request();
 		this.setOptions(options);
-		var requestType = this.$constructor;
 		this.headers = this.options.headers;
 	},
 
 	onStateChange: function(){
 		if (this.xhr.readyState != 4 || !this.running) return;
 		this.running = false;
-		this.status = 0;
-		Function.attempt(function(){
+		this.xhr.onreadystatechange = null;
+		try {
 			this.status = this.xhr.status;
-		}.bind(this));
-		this.xhr.onreadystatechange = emptyFunction;
+		} catch(e){
+			this.status = 0;
+		}
 		if (this.options.isSuccess.call(this, this.status)){
 			this.response = {text: (this.xhr.responseText || ''), xml: this.xhr.responseXML};
 			this.success(this.response.text, this.response.xml);
@@ -82,11 +81,11 @@ var Request = global.Request = new Class({
 			this.failure();
 		}
 	},
-
+	
 	success: function(text, xml){
 		var requestClass = this.$constructor, responseProcessor = this.responseProcessor;
 		responseProcessor = requestClass.responseProcessors[this.options.type || requestClass.contentTypes[this.getHeader('Content-Type')]];
-		
+
 		if (responseProcessor){
 			responseProcessor.call(this, text, xml);
 		} else {
@@ -117,11 +116,11 @@ var Request = global.Request = new Class({
 		}.bind(this));
 	},
 
-	check: function(){
+	check: function(options){
 		if (!this.running) return true;
 		switch (this.options.link){
 			case 'cancel': this.cancel(); return true;
-			case 'chain': this.chain(this.caller.bind(this, arguments)); return false;
+			case 'chain': this.chain(this.caller.bind(this, options)); return false;
 		}
 		return false;
 	},
@@ -179,11 +178,11 @@ var Request = global.Request = new Class({
 		}
 
 		this.xhr.open(method.toUpperCase(), url, this.options.async);
-
+		
 		this.xhr.onreadystatechange = this.onStateChange.bind(this);
 
 		// firing an exception with a meaninful error message
-		var exception = this.$constructor.exception.SET_REQUEST_HEADER;
+		var exception = requestClass.exception.SET_REQUEST_HEADER;
 		Object.each(this.headers, function(value, key){
 			try {
 				this.xhr.setRequestHeader(key, value);
@@ -202,7 +201,7 @@ var Request = global.Request = new Class({
 		if (!this.running) return this;
 		this.running = false;
 		this.xhr.abort();
-		this.xhr.onreadystatechange = emptyFunction;
+		this.xhr.onreadystatechange = null;
 		this.xhr = new Browser.Request();
 		this.fireEvent('cancel');
 		return this;

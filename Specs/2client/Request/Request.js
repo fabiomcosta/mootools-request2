@@ -344,5 +344,101 @@ describe('Request', function(){
 	
 	});
 	
+	
+	
+	
+	describe('link option', function(){
+	
+		it('should create an ajax request and chain the other calls', function(){
+		
+			var responseText = 'response chain';
+			
+			runs(function(){
+				var self = this;
+				this.request = new Request({
+					url: '../Helpers/request.php',
+					link: 'chain',
+					onComplete: this.spy,
+					onSuccess: this.spy
+				}).send({data: {
+					'__type': 'text', '__response': responseText
+				}}).send({data: {
+					'__type': 'text', '__response': responseText + 1
+				}}).chain(this.spy);
+			});
+		
+			waitsFor(800, function(){
+				return this.spy.callCount == 5;
+			});
+		
+			runs(function(){
+				var response = this.request.response;
+				expect(this.spy.calls[0].args).toEqual([responseText, null]); // first complete call
+				expect(this.spy.calls[1].args).toEqual([responseText, null]); // first success call
+				expect(this.spy.calls[2].args).toEqual([responseText + 1, null]); // second complete call
+				expect(this.spy.calls[3].args).toEqual([responseText + 1, null]); // second success call
+				expect(this.spy).toHaveBeenCalledWith(); // chained call
+				expect(response.text).toEqual(responseText + 1);
+			});
+		
+		});
+
+		it('should create an ajax request canceling the current runing one', function(){
+		
+			var responseText = 'response';
+		
+			runs(function(){
+				this.request = new Request({
+					url: '../Helpers/request.php',
+					link: 'cancel',
+					onComplete: this.spy
+				}).send({data: {
+					'__sleep': 0.2, '__type': 'text', '__response': responseText
+				}}).send({data: {
+					'__sleep': 0.2, '__type': 'text', '__response': responseText + 1
+				}});;
+			});
+		
+			waitsFor(800, function(){
+				return this.spy.wasCalled;
+			});
+		
+			runs(function(){
+				var response = this.request.response;
+				expect(this.spy).toHaveBeenCalledWith(responseText + 1, null);
+			});
+		
+		});
+		
+		it('should create an ajax request ignoring the others that are called while theres one runing', function(){
+		
+			var responseText = 'response';
+		
+			runs(function(){
+				this.request = new Request({
+					url: '../Helpers/request.php',
+					link: 'ignore',
+					onComplete: this.spy
+				}).send({data: {
+					'__sleep': 0.2, '__type': 'text', '__response': responseText
+				}}).send({data: {
+					'__sleep': 0.2, '__type': 'text', '__response': responseText + 1
+				}});;
+			});
+		
+			waitsFor(800, function(){
+				return this.spy.wasCalled;
+			});
+		
+			runs(function(){
+				var response = this.request.response;
+				expect(this.spy).toHaveBeenCalledWith(responseText, null);
+			});
+		
+		});
+		
+	
+	});
+	
 
 });

@@ -32,7 +32,7 @@ provides: [Elements.from]
 		if (excludeScripts === false) text = text.stripScripts();
 	
 		var match = text.match(reFirstTag),
-			firstTagTranslation = translations[match[1].toLowerCase()],
+			firstTagTranslation = translations[match ? match[1].toLowerCase() : ''],
 			container = divContainer;
 
 		if (firstTagTranslation){
