@@ -396,7 +396,7 @@ describe('Request', function(){
 					'__sleep': 0.2, '__type': 'text', '__response': responseText
 				}}).send({data: {
 					'__sleep': 0.2, '__type': 'text', '__response': responseText + 1
-				}});;
+				}});
 			});
 		
 			waitsFor(800, function(){
@@ -423,7 +423,7 @@ describe('Request', function(){
 					'__sleep': 0.2, '__type': 'text', '__response': responseText
 				}}).send({data: {
 					'__sleep': 0.2, '__type': 'text', '__response': responseText + 1
-				}});;
+				}});
 			});
 		
 			waitsFor(800, function(){
@@ -437,7 +437,7 @@ describe('Request', function(){
 		
 		});
 		
-	
+
 	});
 	
 

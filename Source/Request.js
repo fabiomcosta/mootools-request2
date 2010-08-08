@@ -56,6 +56,7 @@ var Request = global.Request = new Class({
 		appendData: '', // TODO
 		timeout: false, // TODO
 		type: null // 'script' or 'json' or 'xml' or 'html' or falsy value for autodetection
+		
 	},
 
 	initialize: function(options){
@@ -67,12 +68,12 @@ var Request = global.Request = new Class({
 	onStateChange: function(){
 		if (this.xhr.readyState != 4 || !this.running) return;
 		this.running = false;
-		this.xhr.onreadystatechange = null;
 		try {
 			this.status = this.xhr.status;
 		} catch(e){
 			this.status = 0;
 		}
+		this.xhr.onreadystatechange = null;
 		if (this.options.isSuccess.call(this, this.status)){
 			this.response = {text: (this.xhr.responseText || ''), xml: this.xhr.responseXML};
 			this.success(this.response.text, this.response.xml);
@@ -111,9 +112,10 @@ var Request = global.Request = new Class({
 	},
 
 	getHeader: function(name){
-		return Function.attempt(function(){
+		try {
 			return this.xhr.getResponseHeader(name);
-		}.bind(this));
+		} catch(e){};
+		return null;
 	},
 
 	check: function(options){
@@ -155,14 +157,11 @@ var Request = global.Request = new Class({
 			data = (data) ? _method + '&' + data : _method;
 			method = 'post';
 		}
-
+		
 		if (this.options.urlEncoded && method == 'post'){
 			var encoding = (this.options.encoding) ? '; charset=' + this.options.encoding : '';
-			this.headers['Content-Type'] = 'application/x-www-form-urlencoded' + encoding;
+			this.setHeader('Content-Type', 'application/x-www-form-urlencoded' + encoding);
 		}
-		
-		var requestClass = this.$constructor;
-		this.setHeader('Accept', requestClass.acceptHeaders[this.options.type] || '*/*');
 		
 		if (this.options.noCache){
 			var noCache = 'noCache=' + new Date().getTime();
@@ -171,18 +170,23 @@ var Request = global.Request = new Class({
 
 		var trimPosition = url.lastIndexOf('/');
 		if (trimPosition > -1 && (trimPosition = url.indexOf('#')) > -1) url = url.substr(0, trimPosition);
-
+		
 		if (data && method == 'get'){
 			url = url + (url.contains('?') ? '&' : '?') + data;
 			data = null;
 		}
-
-		this.xhr.open(method.toUpperCase(), url, this.options.async);
 		
-		this.xhr.onreadystatechange = this.onStateChange.bind(this);
+		this.setHeader('Accept', this.$constructor.acceptHeaders[this.options.type] || '*/*');
+		
+		return this.openRequest(method, url, data);
+	},
 
+	openRequest: function(method, url, data){
+		this.xhr.open(method.toUpperCase(), url, this.options.async);
+		this.xhr.onreadystatechange = this.onStateChange.bind(this);
+		
 		// firing an exception with a meaninful error message
-		var exception = requestClass.exception.SET_REQUEST_HEADER;
+		var exception = this.$constructor.exception.SET_REQUEST_HEADER;
 		Object.each(this.headers, function(value, key){
 			try {
 				this.xhr.setRequestHeader(key, value);
