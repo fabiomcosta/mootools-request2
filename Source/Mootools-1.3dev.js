@@ -32,7 +32,7 @@ this.MooTools = {
 var typeOf = this.typeOf = function(item){
 	if (item == null) return 'null';
 	if (item.$family) return item.$family();
-	
+
 	if (item.nodeName){
 		if (item.nodeType == 1) return 'element';
 		if (item.nodeType == 3) return (/\S/).test(item.nodeValue) ? 'textnode' : 'whitespace';
@@ -128,7 +128,7 @@ String.from = function(item){
 // hide, protect
 
 Function.implement({
-	
+
 	hide: function(){
 		this.$hidden = true;
 		return this;
@@ -138,7 +138,7 @@ Function.implement({
 		this.$protected = true;
 		return this;
 	}
-	
+
 });
 
 // Type
@@ -149,7 +149,7 @@ var Type = this.Type = function(name, object){
 		var typeCheck = function(item){
 			return (typeOf(item) == lower);
 		};
-		
+
 		Type['is' + name] = typeCheck;
 		if (object != null){
 			object.prototype.$family = (function(){
@@ -162,11 +162,11 @@ var Type = this.Type = function(name, object){
 	}
 
 	if (object == null) return null;
-	
+
 	object.extend(this);
 	object.$constructor = Type;
 	object.prototype.$constructor = object;
-	
+
 	return object;
 };
 
@@ -185,9 +185,9 @@ var hooksOf = function(object){
 
 var implement = function(name, method){
 	if (method && method.$hidden) return this;
-	
+
 	var hooks = hooksOf(this);
-	
+
 	for (var i = 0; i < hooks.length; i++){
 		var hook = hooks[i];
 		if (typeOf(hook) == 'type') implement.call(hook, name, method);
@@ -196,11 +196,11 @@ var implement = function(name, method){
 
 	var previous = this.prototype[name];
 	if (previous == null || !previous.$protected) this.prototype[name] = method;
-	
+
 	if (this[name] == null && typeOf(method) == 'function') extend.call(this, name, function(item){
 		return method.apply(item, Array.prototype.slice.call(arguments, 1));
 	});
-	
+
 	return this;
 };
 
@@ -212,9 +212,9 @@ var extend = function(name, method){
 };
 
 Type.implement({
-	
+
 	implement: implement.overloadSetter(),
-	
+
 	extend: extend.overloadSetter(),
 
 	alias: function(name, existing){
@@ -225,7 +225,7 @@ Type.implement({
 		hooksOf(this).push(hook);
 		return this;
 	}
-	
+
 });
 
 new Type('Type', Type);
@@ -235,22 +235,22 @@ new Type('Type', Type);
 var force = function(name, type, methods){
 	var object = new Type(name, type),
 		prototype = object.prototype;
-	
+
 	for (var i = 0, l = methods.length; i < l; i++){
 		var key = methods[i],
 			generic = object[key],
 			proto = prototype[key];
-		
+
 		if (generic) generic.protect();
-		
+
 		if (proto){
 			delete prototype[key];
 			prototype[key] = proto.protect();
 		}
 	}
-	
+
 	object.implement(object.prototype);
-	
+
 	return force;
 };
 
@@ -295,18 +295,18 @@ Object.extend('forEach', function(object, fn, bind){
 Object.each = Object.forEach;
 
 Array.implement({
-	
+
 	forEach: function(fn, bind){
 		for (var i = 0, l = this.length; i < l; i++){
 			if (i in this) fn.call(bind, this[i], i, this);
 		}
 	},
-	
+
 	each: function(fn, bind){
 		Array.forEach(this, fn, bind);
 		return this;
 	}
-	
+
 });
 
 // Array & Object cloning, Object merging and appending
@@ -338,7 +338,7 @@ var mergeOne = function(source, key, current){
 };
 
 Object.extend({
-	
+
 	merge: function(source, k, v){
 		if (typeOf(k) == 'string') return mergeOne(source, k, v);
 		for (var i = 1, l = arguments.length; i < l; i++){
@@ -347,13 +347,13 @@ Object.extend({
 		}
 		return source;
 	},
-	
+
 	clone: function(object){
 		var clone = {};
 		for (var key in object) clone[key] = cloneOf(object[key]);
 		return clone;
 	},
-	
+
 	append: function(original){
 		for (var i = 1, l = arguments.length; i < l; i++){
 			var extended = arguments[i] || {};
@@ -361,7 +361,7 @@ Object.extend({
 		}
 		return original;
 	}
-	
+
 });
 
 // Object-less types
@@ -512,7 +512,7 @@ provides: Array
 */
 
 Array.implement({
-	
+
 	invoke: function(methodName){
 		var args = Array.slice(arguments, 1);
 		return this.map(function(item){
@@ -592,7 +592,7 @@ Array.implement({
 		this.push.apply(this, array);
 		return this;
 	},
-	
+
 	getLast: function(){
 		return (this.length) ? this[this.length - 1] : null;
 	},
@@ -632,7 +632,7 @@ Array.implement({
 		}
 		return array;
 	},
-	
+
 	pick: function(){
 		for (var i = 0, l = this.length; i < l; i++){
 			if (this[i] != null) return this[i];
@@ -857,7 +857,7 @@ Function.implement({
 			return self.apply(bind, args || arguments);
 		};
 	},
-	
+
 	curry: function(bind, args){
 		var self = this;
 		if (args != null) args = Array.from(args);
@@ -865,7 +865,7 @@ Function.implement({
 			return self.apply(bind, (args == null) ? arguments : Array.from(arguments).concat(args));
 		};
 	},
-	
+
 	delay: function(delay, bind, args){
 		return setTimeout(this.bind(bind, args || []), delay);
 	},
@@ -904,7 +904,7 @@ Function.implement({
 			return returns();
 		};
 	},
-	
+
 	bindWithEvent: function(bind, args){
 		var self = this;
 		if (args != null) args = Array.from(args);
@@ -912,7 +912,7 @@ Function.implement({
 			return self.apply(bind, (args == null) ? arguments : [event].concat(args));
 		};
 	}
-	
+
 });
 
 var $try = Function.attempt;
@@ -938,7 +938,7 @@ provides: [Object, Hash]
 
 
 Object.extend({
-	
+
 	subset: function(object, keys){
 		var results = {};
 		for (var i = 0, l = keys.length; i < l; i++){
@@ -947,7 +947,7 @@ Object.extend({
 		}
 		return results;
 	},
-	
+
 	map: function(object, fn, bind){
 		var results = {};
 		for (var key in object){
@@ -955,7 +955,7 @@ Object.extend({
 		}
 		return results;
 	},
-	
+
 	filter: function(object, fn, bind){
 		var results = {};
 		Object.each(object, function(value, key){
@@ -963,21 +963,21 @@ Object.extend({
 		});
 		return results;
 	},
-	
+
 	every: function(object, fn, bind){
 		for (var key in object){
 			if (object.hasOwnProperty(key) && !fn.call(bind, object[key], key)) return false;
 		}
 		return true;
 	},
-	
+
 	some: function(object, fn, bind){
 		for (var key in object){
 			if (object.hasOwnProperty(key) && fn.call(bind, object[key], key)) return true;
 		}
 		return false;
 	},
-	
+
 	keys: function(object){
 		var keys = [];
 		for (var key in object){
@@ -985,7 +985,7 @@ Object.extend({
 		}
 		return keys;
 	},
-	
+
 	values: function(object){
 		var values = [];
 		for (var key in object){
@@ -993,25 +993,25 @@ Object.extend({
 		}
 		return values;
 	},
-	
+
 	getLength: function(object){
 		return Object.keys(object).length;
 	},
-	
+
 	keyOf: function(object, value){
 		for (var key in object){
 			if (object.hasOwnProperty(key) && object[key] === value) return key;
 		}
 		return null;
 	},
-	
+
 	contains: function(object, value){
 		return Object.keyOf(object, value) != null;
 	},
-	
+
 	toQueryString: function(object, base){
 		var queryString = [];
-		
+
 		Object.each(object, function(value, key){
 			if (base) key = base + '[' + key + ']';
 			var result;
@@ -1031,7 +1031,7 @@ Object.extend({
 
 		return queryString.join('&');
 	}
-	
+
 });
 
 
@@ -1161,9 +1161,9 @@ var ua = navigator.userAgent.toLowerCase(),
 	UA = ua.match(/(opera|ie|firefox|chrome|version)[\s\/:]([\w\d\.]+)?.*?(safari|version[\s\/:]([\w\d\.]+)|$)/) || [null, 'unknown', 0];
 
 var Browser = this.Browser = {
-	
+
 	extend: Function.prototype.extend,
-	
+
 	name: (UA[1] == 'version') ? UA[3] : UA[1],
 
 	version: parseFloat((UA[1] == 'opera' && UA[4]) ? UA[4] : UA[2]),
@@ -1194,15 +1194,15 @@ Browser.Request = (function(){
 	var XMLHTTP = function(){
 		return new XMLHttpRequest();
 	};
- 
+
 	var MSXML2 = function(){
 		return new ActiveXObject('MSXML2.XMLHTTP');
 	};
- 
+
 	var MSXML = function(){
 		return new ActiveXObject('Microsoft.XMLHTTP');
 	};
- 
+
 	return Function.attempt(function(){
 		XMLHTTP();
 		return XMLHTTP;
@@ -1259,7 +1259,7 @@ String.implement('stripScripts', function(exec){
 });
 
 // Window, Document
-	
+
 Browser.extend({
 	Document: this.Document,
 	Window: this.Window,
@@ -1311,7 +1311,7 @@ try {
 		}
 		return arrayFrom(item);
 	};
-	
+
 	['pop', 'push', 'reverse', 'shift', 'sort', 'splice', 'unshift', 'concat', 'join', 'slice'].each(function(name){
 		var method = Array.prototype[name];
 		Array[name] = function(item){
@@ -1334,7 +1334,7 @@ var setEngine = function(name, version){
 
 if (Browser.ie){
 	Browser.Engine.trident = true;
-	
+
 	switch (Browser.version){
 		case 6: setEngine('trident', 4); break;
 		case 7: setEngine('trident', 5); break;
@@ -1344,14 +1344,14 @@ if (Browser.ie){
 
 if (Browser.firefox){
 	Browser.Engine.gecko = true;
-	
+
 	if (Browser.version >= 3) setEngine('gecko', 19);
 	else setEngine('gecko', 18);
 }
 
 if (Browser.safari || Browser.chrome){
 	Browser.Engine.webkit = true;
-	
+
 	switch (Browser.version){
 		case 2: setEngine('webkit', 419); break;
 		case 3: setEngine('webkit', 420); break;
@@ -1361,7 +1361,7 @@ if (Browser.safari || Browser.chrome){
 
 if (Browser.opera){
 	Browser.Engine.presto = true;
-	
+
 	if (Browser.version >= 9.6) setEngine('presto', 960);
 	else if (Browser.version >= 9.5) setEngine('presto', 950);
 	else setEngine('presto', 925);
@@ -1535,9 +1535,9 @@ provides: Class
 (function(){
 
 var Class = this.Class = new Type('Class', function(params){
-	
+
 	if (instanceOf(params, Function)) params = {'initialize': params};
-	
+
 	var newClass = function(){
 		reset(this);
 		if (newClass.$prototyping) return this;
@@ -1548,7 +1548,7 @@ var Class = this.Class = new Type('Class', function(params){
 	}.extend(this);
 
 	newClass.implement(params);
-	
+
 	newClass.$constructor = Class;
 	newClass.prototype.$constructor = newClass;
 	newClass.prototype.parent = parent;
@@ -1595,21 +1595,21 @@ var wrap = function(self, key, method){
 };
 
 var implement = function(key, value, retain){
-	
+
 	if (Class.Mutators.hasOwnProperty(key)){
 		value = Class.Mutators[key].call(this, value);
 		if (value == null) return this;
 	}
-	
+
 	if (typeOf(value) == 'function'){
 		if (value.$hidden) return this;
 		this.prototype[key] = (retain) ? value : wrap(this, key, value);
 	} else {
 		Object.merge(this.prototype, key, value);
 	}
-	
+
 	return this;
-	
+
 };
 
 var getInstance = function(klass){
@@ -1622,12 +1622,12 @@ var getInstance = function(klass){
 Class.implement('implement', implement.overloadSetter());
 
 Class.Mutators = {
-	
+
 	Extends: function(parent){
 		this.parent = parent;
 		this.prototype = getInstance(parent);
 	},
-	
+
 	Implements: function(items){
 		Array.from(items).each(function(item){
 			var instance = new item;
@@ -1766,7 +1766,7 @@ provides: Slick.Parser
 */
 
 (function(){
-	
+
 var parsed,
 	separatorIndex,
 	combinatorIndex,
@@ -1803,14 +1803,14 @@ var reverse = function(expression){
 	for (var i = 0; i < expressions.length; i++){
 		var exp = expressions[i];
 		var last = {parts: [], tag: '*', combinator: reverseCombinator(exp[0].combinator)};
-		
+
 		for (var j = 0; j < exp.length; j++){
 			var cexp = exp[j];
 			if (!cexp.reverseCombinator) cexp.reverseCombinator = ' ';
 			cexp.combinator = cexp.reverseCombinator;
 			delete cexp.reverseCombinator;
 		}
-		
+
 		exp.reverse().push(last);
 	}
 	return expression;
@@ -1826,7 +1826,7 @@ var regexp = new RegExp(
 puts "\t\t" + DATA.read.gsub(/\(\?x\)|\s+#.*$|\s+|\\$|\\n/,'')
 __END__
 	"(?x)^(?:\
-	  \\s* ( , ) \\s*               # Separator          \n\
+		\\s* ( , ) \\s*               # Separator          \n\
 	| \\s* ( <combinator>+ ) \\s*   # Combinator         \n\
 	|      ( \\s+ )                 # CombinatorChildren \n\
 	|      ( <unicode>+ | \\* )     # Tag                \n\
@@ -1857,20 +1857,20 @@ __END__
 
 function parser(
 	rawMatch,
-	
+
 	separator,
 	combinator,
 	combinatorChildren,
-	
+
 	tagName,
 	id,
 	className,
-	
+
 	attributeKey,
 	attributeOperator,
 	attributeQuote,
 	attributeValue,
-	
+
 	pseudoClass,
 	pseudoQuote,
 	pseudoClassValue
@@ -1880,7 +1880,7 @@ function parser(
 		combinatorIndex = -1;
 		if (separator) return '';
 	}
-	
+
 	if (combinator || combinatorChildren || combinatorIndex === -1){
 		combinator = combinator || ' ';
 		var currentSeparator = parsed.expressions[separatorIndex];
@@ -1888,7 +1888,7 @@ function parser(
 			currentSeparator[combinatorIndex].reverseCombinator = reverseCombinator(combinator);
 		currentSeparator[++combinatorIndex] = {combinator: combinator, tag: '*'};
 	}
-	
+
 	var currentParsed = parsed.expressions[separatorIndex][combinatorIndex];
 
 	if (tagName){
@@ -1907,22 +1907,22 @@ function parser(
 			value: className,
 			regexp: new RegExp('(^|\\s)' + escapeRegExp(className) + '(\\s|$)')
 		});
-		
+
 	} else if (pseudoClass){
 		pseudoClassValue = pseudoClassValue ? pseudoClassValue.replace(reUnescape, '') : null;
-		
+
 		if (!currentParsed.pseudos) currentParsed.pseudos = [];
 		currentParsed.pseudos.push({
 			key: pseudoClass.replace(reUnescape, ''),
 			value: pseudoClassValue
 		});
-		
+
 	} else if (attributeKey){
 		attributeKey = attributeKey.replace(reUnescape, '');
 		attributeValue = (attributeValue || '').replace(reUnescape, '');
-		
+
 		var test, regexp;
-		
+
 		switch (attributeOperator){
 			case '^=' : regexp = new RegExp(       '^'+ escapeRegExp(attributeValue)            ); break;
 			case '$=' : regexp = new RegExp(            escapeRegExp(attributeValue) +'$'       ); break;
@@ -1941,11 +1941,11 @@ function parser(
 				return !!value;
 			};
 		}
-		
+
 		if (!test) test = function(value){
 			return value && regexp.test(value);
 		};
-		
+
 		if (!currentParsed.attributes) currentParsed.attributes = [];
 		currentParsed.attributes.push({
 			key: attributeKey,
@@ -1953,9 +1953,9 @@ function parser(
 			value: attributeValue,
 			test: test
 		});
-		
+
 	}
-	
+
 	return '';
 };
 
@@ -1970,7 +1970,7 @@ Slick.parse = function(expression){
 Slick.escapeRegExp = escapeRegExp;
 
 if (!this.Slick) this.Slick = Slick;
-	
+
 }).apply(/*<CommonJS>*/(typeof exports != 'undefined') ? exports : /*</CommonJS>*/this);
 
 
@@ -1999,65 +1999,65 @@ local.isXML = function(document){
 };
 
 local.setDocument = function(document){
-	
+
 	// convert elements / window arguments to document. if document cannot be extrapolated, the function returns.
-	
+
 	if (document.nodeType === 9); // document
 	else if (document.ownerDocument) document = document.ownerDocument; // node
 	else if (document.navigator) document = document.document; // window
 	else return;
-	
+
 	// check if it's the old document
-	
+
 	if (this.document === document) return;
 	this.document = document;
 	var root = this.root = document.documentElement;
-	
+
 	// document sort
-	
+
 	this.brokenStarGEBTN
 	= this.starSelectsClosedQSA
 	= this.idGetsName
 	= this.brokenMixedCaseQSA
 	= this.brokenGEBCN
 	= false;
-	
+
 	var starSelectsClosed, starSelectsComments,
 		brokenSecondClassNameGEBCN, cachedGetElementsByClassName;
-	
+
 	if (!(this.isXMLDocument = this.isXML(document))){
-		
+
 		var testNode = document.createElement('div');
 		this.root.appendChild(testNode);
 		var selected, id;
-		
+
 		// IE returns comment nodes for getElementsByTagName('*') for some documents
 		testNode.appendChild(document.createComment(''));
 		starSelectsComments = (testNode.getElementsByTagName('*').length > 0);
-		
+
 		// IE returns closed nodes (EG:"</foo>") for getElementsByTagName('*') for some documents
 		try {
 			testNode.innerHTML = 'foo</foo>';
 			selected = testNode.getElementsByTagName('*');
 			starSelectsClosed = (selected && selected.length && selected[0].nodeName.charAt(0) == '/');
 		} catch(e){};
-		
+
 		this.brokenStarGEBTN = starSelectsComments || starSelectsClosed;
-		
+
 		// IE 8 returns closed nodes (EG:"</foo>") for querySelectorAll('*') for some documents
 		if (testNode.querySelectorAll) try {
 			testNode.innerHTML = 'foo</foo>';
 			selected = testNode.querySelectorAll('*');
 			this.starSelectsClosedQSA = (selected && selected.length && selected[0].nodeName.charAt(0) == '/');
 		} catch(e){};
-		
+
 		// IE returns elements with the name instead of just id for getElementById for some documents
 		try {
 			id = 'slick_id_gets_name';
 			testNode.innerHTML = ('<a name='+id+'></a><b id='+id+'></b>');
 			this.idGetsName = testNode.ownerDocument.getElementById(id) === testNode.firstChild;
 		} catch(e){};
-		
+
 		// Safari 3.2 QSA doesnt work with mixedcase on quirksmode
 		try {
 			testNode.innerHTML = '<a class="MiXedCaSe"></a>';
@@ -2070,29 +2070,29 @@ local.setDocument = function(document){
 			testNode.firstChild.className = 'b';
 			cachedGetElementsByClassName = (testNode.getElementsByClassName('b').length != 2);
 		} catch(e){};
-		
+
 		// Opera 9.6 GEBCN doesnt detects the class if its not the first one
 		try {
 			testNode.innerHTML = '<a class="a"></a><a class="f b a"></a>';
 			brokenSecondClassNameGEBCN = (testNode.getElementsByClassName('a').length != 2);
 		} catch(e){};
-		
+
 		this.brokenGEBCN = cachedGetElementsByClassName || brokenSecondClassNameGEBCN;
-		
+
 		this.root.removeChild(testNode);
 		testNode = null;
-		
+
 	}
-	
+
 	// hasAttribute
-	
+
 	this.hasAttribute = (root && this.isNativeCode(root.hasAttribute)) ? function(node, attribute) {
 		return node.hasAttribute(attribute);
 	} : function(node, attribute) {
 		node = node.getAttributeNode(attribute);
 		return !!(node && (node.specified || node.nodeValue));
 	};
-	
+
 	// contains
 	// FIXME: Add specs: local.contains should be different for xml and html documents?
 	this.contains = (root && this.isNativeCode(root.contains)) ? function(context, node){
@@ -2105,10 +2105,10 @@ local.setDocument = function(document){
 		} while ((node = node.parentNode));
 		return false;
 	};
-	
+
 	// document order sorting
 	// credits to Sizzle (http://sizzlejs.com/)
-	
+
 	this.documentSorter = (root.compareDocumentPosition) ? function(a, b){
 		if (!a.compareDocumentPosition || !b.compareDocumentPosition) return 0;
 		return a.compareDocumentPosition(b) & 4 ? -1 : a === b ? 0 : 1;
@@ -2124,24 +2124,24 @@ local.setDocument = function(document){
 		bRange.setEnd(b, 0);
 		return aRange.compareBoundaryPoints(Range.START_TO_END, bRange);
 	} : null ;
-	
+
 	this.getUID = (this.isXMLDocument) ? this.getUIDXML : this.getUIDHTML;
-	
+
 };
-	
+
 // Main Method
 
 local.search = function(context, expression, append, first){
-	
+
 	var found = this.found = (first) ? null : (append || []);
-	
+
 	// no need to pass a context if its the current document
-	
+
 	if (expression == null){
 		expression = context;
 		context = document; // the current document, not local.document, cause it would be confusing
 	}
-	
+
 	// context checks
 
 	if (!context) return found; // No context
@@ -2149,17 +2149,17 @@ local.search = function(context, expression, append, first){
 	else if (!context.nodeType) return found; // Reject misc junk input
 
 	// setup
-	
+
 	var parsed, i;
 
 	var uniques = this.uniques = {};
-	
+
 	if (this.document !== (context.ownerDocument || context)) this.setDocument(context);
 
 	// expression checks
-	
+
 	if (typeof expression == 'string'){ // expression is a string
-		
+
 		// Overrides
 
 		for (i = this.overrides.length; i--;){
@@ -2171,7 +2171,7 @@ local.search = function(context, expression, append, first){
 				return result;
 			}
 		}
-		
+
 		parsed = this.Slick.parse(expression);
 		if (!parsed.length) return found;
 	} else if (expression == null){ // there is no expression
@@ -2184,41 +2184,41 @@ local.search = function(context, expression, append, first){
 	} else { // other junk
 		return found;
 	}
-	
+
 	// cache elements for the nth selectors
-	
+
 	/*<pseudo-selectors>*//*<nth-pseudo-selectors>*/
-	
+
 	this.posNTH = {};
 	this.posNTHLast = {};
 	this.posNTHType = {};
 	this.posNTHTypeLast = {};
-	
+
 	/*</nth-pseudo-selectors>*//*</pseudo-selectors>*/
-	
+
 	// should sort if there are nodes in append and if you pass multiple expressions.
 	// should remove duplicates if append already has items
 	var shouldUniques = !!(append && append.length);
-	
+
 	// if append is null and there is only a single selector with one expression use pushArray, else use pushUID
 	this.push = (!shouldUniques && (first || (parsed.length == 1 && parsed.expressions[0].length == 1))) ? this.pushArray : this.pushUID;
-	
+
 	if (found == null) found = [];
-	
+
 	// avoid duplicating items already in the append array
 	if (shouldUniques) for (i = found.length; i--;) this.uniques[this.getUID(found[i])] = true;
-	
+
 	// default engine
-	
+
 	var j, m, n;
 	var combinator, tag, id, classList, classes, attributes, pseudos;
 	var currentItems, currentExpression, currentBit, lastBit, expressions = parsed.expressions;
-	
+
 	search: for (i = 0; (currentExpression = expressions[i]); i++) for (j = 0; (currentBit = currentExpression[j]); j++){
 
 		combinator = 'combinator:' + currentBit.combinator;
 		if (!this[combinator]) continue search;
-		
+
 		tag        = (this.isXMLDocument) ? currentBit.tag : currentBit.tag.toUpperCase();
 		id         = currentBit.id;
 		classList  = currentBit.classList;
@@ -2226,9 +2226,9 @@ local.search = function(context, expression, append, first){
 		attributes = currentBit.attributes;
 		pseudos    = currentBit.pseudos;
 		lastBit    = (j === (currentExpression.length - 1));
-	
+
 		this.bitUniques = {};
-		
+
 		if (lastBit){
 			this.uniques = uniques;
 			this.found = found;
@@ -2246,12 +2246,12 @@ local.search = function(context, expression, append, first){
 				if (found.length) break search;
 			} else for (m = 0, n = currentItems.length; m < n; m++) this[combinator](currentItems[m], tag, id, classes, attributes, pseudos, classList);
 		}
-		
+
 		currentItems = this.found;
 	}
-	
+
 	if (shouldUniques || (parsed.expressions.length > 1)) this.sort(found);
-	
+
 	return (first) ? (found[0] || null) : found;
 };
 
@@ -2298,7 +2298,7 @@ local.parseNTHArgument = function(argument){
 		(special == 'n')	? {a: a, b: b} :
 		(special == 'odd')	? {a: 2, b: 1} :
 		(special == 'even')	? {a: 2, b: 0} : {a: 0, b: a};
-		
+
 	return (this.cacheNTH[argument] = parsed);
 };
 
@@ -2353,7 +2353,7 @@ local.pushUID = function(node, tag, id, classes, attributes, pseudos){
 local.matchNode = function(node, selector){
 	var parsed = this.Slick.parse(selector);
 	if (!parsed) return true;
-	
+
 	// simple (single) selectors
 	if(parsed.length == 1 && parsed.expressions[0].length == 1){
 		var exp = parsed.expressions[0][0];
@@ -2382,7 +2382,7 @@ local.matchSelector = function(node, tag, id, classes, attributes, pseudos){
 			if (node.nodeName != tag) return false;
 		}
 	}
-	
+
 	if (id && node.getAttribute('id') != id) return false;
 
 	var i, part, cls;
@@ -2404,7 +2404,7 @@ local.matchSelector = function(node, tag, id, classes, attributes, pseudos){
 var combinators = {
 
 	' ': function(node, tag, id, classes, attributes, pseudos, classList){ // all child nodes, any level
-		
+
 		var i, item, children;
 
 		if (!this.isXMLDocument){
@@ -2419,7 +2419,7 @@ var combinators = {
 					for (i = 0; item = children[i++];) if (item.getAttributeNode('id').nodeValue == id){
 						this.push(item, tag, null, classes, attributes, pseudos);
 						break;
-					} 
+					}
 					return;
 				}
 				if (!item){
@@ -2444,13 +2444,13 @@ var combinators = {
 			for (i = 0; item = children[i++];) this.push(item, tag, id, classes, attributes, pseudos);
 		}
 	},
-	
+
 	'>': function(node, tag, id, classes, attributes, pseudos){ // direct children
 		if ((node = node.firstChild)) do {
 			if (node.nodeType === 1) this.push(node, tag, id, classes, attributes, pseudos);
 		} while ((node = node.nextSibling));
 	},
-	
+
 	'+': function(node, tag, id, classes, attributes, pseudos){ // next sibling
 		while ((node = node.nextSibling)) if (node.nodeType === 1){
 			this.push(node, tag, id, classes, attributes, pseudos);
@@ -2485,23 +2485,23 @@ var combinators = {
 		this['combinator:~'](node, tag, id, classes, attributes, pseudos);
 		this['combinator:!~'](node, tag, id, classes, attributes, pseudos);
 	},
-	
+
 	'!': function(node, tag, id, classes, attributes, pseudos){  // all parent nodes up to document
 		while ((node = node.parentNode)) if (node !== document) this.push(node, tag, id, classes, attributes, pseudos);
 	},
-	
+
 	'!>': function(node, tag, id, classes, attributes, pseudos){ // direct parent (one level)
 		node = node.parentNode;
 		if (node !== document) this.push(node, tag, id, classes, attributes, pseudos);
 	},
-	
+
 	'!+': function(node, tag, id, classes, attributes, pseudos){ // previous sibling
 		while ((node = node.previousSibling)) if (node.nodeType === 1){
 			this.push(node, tag, id, classes, attributes, pseudos);
 			break;
 		}
 	},
-	
+
 	'!^': function(node, tag, id, classes, attributes, pseudos){ // last child
 		node = node.lastChild;
 		if (node){
@@ -2525,7 +2525,7 @@ var combinators = {
 for (var c in combinators) local['combinator:' + c] = combinators[c];
 
 var pseudos = {
-	
+
 	/*<pseudo-selectors>*/
 
 	'empty': function(node){
@@ -2558,17 +2558,17 @@ var pseudos = {
 		while ((next = next.nextSibling)) if (next.nodeType === 1) return false;
 		return true;
 	},
-	
+
 	/*<nth-pseudo-selectors>*/
 
 	'nth-child': local.createNTHPseudo('firstChild', 'nextSibling', 'posNTH'),
-	
+
 	'nth-last-child': local.createNTHPseudo('lastChild', 'previousSibling', 'posNTHLast'),
-	
+
 	'nth-of-type': local.createNTHPseudo('firstChild', 'nextSibling', 'posNTHType', true),
-	
+
 	'nth-last-of-type': local.createNTHPseudo('lastChild', 'previousSibling', 'posNTHTypeLast', true),
-	
+
 	'index': function(node, index){
 		return this['pseudo:nth-child'](node, '' + index + 1);
 	},
@@ -2580,23 +2580,23 @@ var pseudos = {
 	'odd': function(node, argument){
 		return this['pseudo:nth-child'](node, '2n+1');
 	},
-	
+
 	/*</nth-pseudo-selectors>*/
-	
+
 	/*<of-type-pseudo-selectors>*/
-	
+
 	'first-of-type': function(node){
 		var nodeName = node.nodeName;
 		while ((node = node.previousSibling)) if (node.nodeName === nodeName) return false;
 		return true;
 	},
-	
+
 	'last-of-type': function(node){
 		var nodeName = node.nodeName;
 		while ((node = node.nextSibling)) if (node.nodeName === nodeName) return false;
 		return true;
 	},
-	
+
 	'only-of-type': function(node){
 		var prev = node, nodeName = node.nodeName;
 		while ((prev = prev.previousSibling)) if (prev.nodeName === nodeName) return false;
@@ -2604,7 +2604,7 @@ var pseudos = {
 		while ((next = next.nextSibling)) if (next.nodeName === nodeName) return false;
 		return true;
 	},
-	
+
 	/*</of-type-pseudo-selectors>*/
 
 	// custom pseudos
@@ -2612,7 +2612,7 @@ var pseudos = {
 	'enabled': function(node){
 		return (node.disabled === false);
 	},
-	
+
 	'disabled': function(node){
 		return (node.disabled === true);
 	},
@@ -2624,11 +2624,11 @@ var pseudos = {
 	'selected': function(node){
 		return node.selected;
 	},
-	
+
 	'focus': function(node){
 		return !this.isXMLDocument && this.document.activeElement === node && (node.href || node.type || this.hasAttribute(node, 'tabindex'));
 	}
-	
+
 	/*</pseudo-selectors>*/
 };
 
@@ -2641,15 +2641,15 @@ local.attributeGetters = {
 	'class': function(){
 		return ('className' in this) ? this.className : this.getAttribute('class');
 	},
-	
+
 	'for': function(){
 		return ('htmlFor' in this) ? this.htmlFor : this.getAttribute('for');
 	},
-	
+
 	'href': function(){
 		return ('href' in this) ? this.getAttribute('href', 2) : this.getAttribute('href');
 	},
-	
+
 	'style': function(){
 		return (this.style) ? this.style.cssText : this.getAttribute('style');
 	}
@@ -2680,7 +2680,7 @@ local.override = function(regexp, method){
 local.override(/./, function(expression, found, first){ //querySelectorAll override
 
 	if (!this.querySelectorAll || this.nodeType != 9 || local.isXMLDocument || local.brokenMixedCaseQSA || Slick.disableQSA) return false;
-	
+
 	var nodes, node;
 	try {
 		if (first) return this.querySelector(expression) || null;
@@ -2710,16 +2710,16 @@ local.override(/./, function(expression, found, first){ //querySelectorAll overr
 local.override(/^[\w-]+$|^\*$/, function(expression, found, first){ // tag override
 	var tag = expression;
 	if (tag == '*' && local.brokenStarGEBTN) return false;
-	
+
 	var nodes = this.getElementsByTagName(tag);
-	
+
 	if (first) return nodes[0] || null;
 	var i, node, hasOthers = !!(found.length);
-	
+
 	for (i = 0; node = nodes[i++];){
 		if (!hasOthers || !local.uniques[local.getUID(node)]) found.push(node);
 	}
-	
+
 	if (hasOthers) local.sort(found);
 
 	return true;
@@ -2731,7 +2731,7 @@ local.override(/^[\w-]+$|^\*$/, function(expression, found, first){ // tag overr
 
 local.override(/^\.[\w-]+$/, function(expression, found, first){ // class override
 	if (local.isXMLDocument || (!this.getElementsByClassName && this.querySelectorAll)) return false;
-	
+
 	var nodes, node, i, hasOthers = !!(found && found.length), className = expression.substring(1);
 	if (this.getElementsByClassName && !local.brokenGEBCN){
 		nodes = this.getElementsByClassName(className);
@@ -2759,7 +2759,7 @@ local.override(/^\.[\w-]+$/, function(expression, found, first){ // class overri
 
 local.override(/^#[\w-]+$/, function(expression, found, first){ // ID override
 	if (local.isXMLDocument || this.nodeType != 9) return false;
-	
+
 	var id = expression.substring(1), el = this.getElementById(id);
 	if (!el) return found;
 	if (local.idGetsName && el.getAttributeNode('id').nodeValue != id) return false;
@@ -2857,7 +2857,7 @@ Slick.uidOf = function(node){
 };
 
 if (!this.Slick) this.Slick = Slick;
-	
+
 }).apply(/*<CommonJS>*/(typeof exports != 'undefined') ? exports : /*</CommonJS>*/this);
 
 
@@ -2882,27 +2882,27 @@ this.Element = function(tag, props){
 	var konstructor = Element.Constructors[tag];
 	if (konstructor) return konstructor(props);
 	if (typeof tag != 'string') return document.id(tag).set(props);
-	
+
 	if (!props) props = {};
-	
+
 	if (!tag.test(/^[\w-]+$/)){
 		var parsed = Slick.parse(tag).expressions[0][0];
 		tag = (parsed.tag == '*') ? 'div' : parsed.tag;
 		if (parsed.id && props.id == null) props.id = parsed.id;
-		
+
 		var attributes = parsed.attributes;
 		if (attributes) for (var i = 0, l = attributes.length; i < l; i++){
 			var attr = attributes[i];
 			if (attr.value != null && attr.operator == '=' && props[attr.key] == null)
 				props[attr.key] = attr.value;
 		}
-		
+
 		if (parsed.classList && props['class'] == null) props['class'] = parsed.classList.join(' ');
 	}
-	
+
 	return document.newElement(tag, props);
 };
-	
+
 if (Browser.Element){
 	Element.prototype = Browser.Element.prototype;
 }
@@ -2917,7 +2917,7 @@ new Type('Element', Element).mirror(function(name, method){
 		}
 		return (elements) ? new Elements(results) : results;
 	};
-	
+
 	Elements.implement(obj);
 });
 
@@ -2969,7 +2969,7 @@ var IFrame = new Type('IFrame', function(){
 	((contentWindow && contentWindow.document.body) || window.frames[props.id]) ? onFrameLoad() : iframe.addListener('load', onFrameLoad);
 	return iframe;
 });
- 
+
 var Elements = this.Elements = function(nodes){
 	if (nodes && nodes.length){
 		var uniques = {}, node;
@@ -2982,19 +2982,19 @@ var Elements = this.Elements = function(nodes){
 		}
 	}
 };
- 
+
 Elements.prototype = {length: 0};
 Elements.parent = Array;
 
 new Type('Elements', Elements).implement({
- 
+
 	filter: function(filter, bind){
 		if (!filter) return this;
 		return new Elements(Array.filter(this, (typeOf(filter) == 'string') ? function(item){
 			return item.match(filter);
 		} : filter, bind));
 	}.protect(),
- 
+
 	push: function(){
 		var length = this.length;
 		for (var i = 0, l = arguments.length; i < l; i++){
@@ -3003,9 +3003,9 @@ new Type('Elements', Elements).implement({
 		}
 		return (this.length = length);
 	}.protect()
- 
+
 }).implement(Array.prototype);
- 
+
 Array.mirror(Elements);
 
 Document.implement({
@@ -3026,16 +3026,16 @@ Document.implement({
 	getWindow: function(){
 		return this.window;
 	},
-	
+
 	id: (function(){
-		
+
 		var types = {
 
 			string: function(id, nocash, doc){
 				id = Slick.find(doc, '#' + id);
 				return (id) ? types.element(id, nocash) : null;
 			},
-			
+
 			element: function(el, nocash){
 				$uid(el);
 				if (!nocash && !el.$family && !(/^object|embed$/i).test(el.tagName)){
@@ -3043,18 +3043,18 @@ Document.implement({
 				}
 				return el;
 			},
-			
+
 			object: function(obj, nocash, doc){
 				if (obj.toElement) return types.element(obj.toElement(doc), nocash);
 				return null;
 			}
-			
+
 		};
 
 		types.textnode = types.whitespace = types.window = types.document = function(zero){
 			return zero;
 		};
-		
+
 		return function(el, nocash, doc){
 			if (el && el.$family && el.uid) return el;
 			var type = typeOf(el);
@@ -3082,15 +3082,15 @@ Window.implement({
 });
 
 [Document, Element].invoke('implement', {
- 
+
 	getElements: function(expression){
 		return Slick.search(this, expression, new Elements);
 	},
- 
+
 	getElement: function(expression){
 		return document.id(Slick.find(this, expression));
 	}
- 
+
 });
 
 //<1.2compat>
@@ -3193,14 +3193,14 @@ inserters.inside = inserters.bottom;
 Object.each(inserters, function(inserter, where){
 
 	where = where.capitalize();
-	
+
 	var methods = {};
-	
+
 	methods['inject' + where] = function(el){
 		inserter(this, document.id(el, true));
 		return this;
 	};
-	
+
 	methods['grab' + where] = function(el){
 		inserter(document.id(el, true), this);
 		return this;
@@ -3293,14 +3293,14 @@ Element.implement({
 	adopt: function(){
 		var parent = this, fragment, elements = Array.flatten(arguments), length = elements.length;
 		if (length > 1) parent = fragment = document.createDocumentFragment();
-		
+
 		for (var i = 0; i < length; i++){
 			var element = document.id(elements[i], true);
 			if (element) parent.appendChild(element);
 		}
-		
+
 		if (fragment) this.appendChild(fragment);
-		
+
 		return this;
 	},
 
@@ -3360,7 +3360,7 @@ Element.implement({
 	getParents: function(match){
 		return Slick.search(this, '! ' + (match || ''), new Elements);
 	},
-	
+
 	getSiblings: function(match){
 		return Slick.search(this, '~~ ' + (match || ''), new Elements);
 	},
@@ -3393,12 +3393,12 @@ Element.implement({
 		this.getElements('input, select, textarea').each(function(el){
 			var type = el.type;
 			if (!el.name || el.disabled || type == 'submit' || type == 'reset' || type == 'file' || type == 'image') return;
-			
+
 			var value = (el.get('tag') == 'select') ? el.getSelected().map(function(opt){
 				// IE
 				return document.id(opt).get('value');
 			}) : ((type == 'radio' || type == 'checkbox') && !el.checked) ? null : el.get('value');
-			
+
 			Array.from(value).each(function(val){
 				if (typeof val != 'undefined') queryString.push(encodeURIComponent(el.name) + '=' + encodeURIComponent(val));
 			});
@@ -3432,14 +3432,14 @@ Element.implement({
 		clean(clone, this);
 		return document.id(clone);
 	},
-	
+
 	destroy: function(){
 		var children = clean(this).getElementsByTagName('*');
 		Array.each(children, clean);
 		Element.dispose(this);
 		return null;
 	},
-	
+
 	empty: function(){
 		Array.from(this.childNodes).each(Element.dispose);
 		return this;
@@ -3564,12 +3564,12 @@ Element.Properties.tag = {
 })(document.createElement('input').getAttribute('maxLength'));
 
 Element.Properties.html = (function(){
-	
+
 	var tableTest = Function.attempt(function(){
 		var table = document.createElement('table');
 		table.innerHTML = '<tr><td></td></tr>';
 	});
-	
+
 	var wrapper = document.createElement('div');
 
 	var translations = {
@@ -4655,7 +4655,7 @@ Fx.Tween = new Class({
 });
 
 Element.Properties.tween = {
-	
+
 	set: function(options){
 		this.get('tween').cancel().setOptions(options);
 		return this;
@@ -4945,7 +4945,7 @@ var Request = new Class({
 
 	send: function(options){
 		if (!this.check(options)) return this;
-		
+
 		this.options.isSuccess = this.options.isSuccess || this.isSuccess;
 		this.running = true;
 
@@ -5037,7 +5037,7 @@ Request.implement(methods);
 })();
 
 Element.Properties.send = {
-	
+
 	set: function(options){
 		var send = this.get('send').cancel();
 		send.setOptions(options);
@@ -5100,8 +5100,8 @@ Request.HTML = new Class({
 
 		response.html = text.stripScripts(function(script){
 			response.javascript = script;
-		}); 
-		
+		});
+
 		var match = response.html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
 		if (match) response.html = match[1];
 		var temp = new Element('div').set('html', response.html);
@@ -5120,7 +5120,7 @@ Request.HTML = new Class({
 });
 
 Element.Properties.load = {
-	
+
 	set: function(options){
 		var load = this.get('load').cancel();
 		load.setOptions(options);
@@ -5178,7 +5178,7 @@ JSON = new Hash({
 //</1.2compat>
 
 Object.append(JSON, {
-	
+
 	$specialChars: {'\b': '\\b', '\t': '\\t', '\n': '\\n', '\f': '\\f', '\r': '\\r', '"' : '\\"', '\\': '\\\\'},
 
 	$replaceChars: function(chr){
@@ -5413,7 +5413,7 @@ description: Wrapper for embedding SWF movies. Supports External Interface Commu
 
 license: MIT-style license.
 
-credits: 
+credits:
   - Flash detection & Internet Explorer + Flash Player 9 fix inspired by SWFObject.
 
 requires: [Options, Object]
@@ -5479,7 +5479,7 @@ var Swiff = new Class({
 			properties.type = 'application/x-shockwave-flash';
 		}
 		properties.data = path;
-		
+
 		var build = '<object id="' + id + '"';
 		for (var property in properties) build += ' ' + property + '="' + properties[property] + '"';
 		build += '>';

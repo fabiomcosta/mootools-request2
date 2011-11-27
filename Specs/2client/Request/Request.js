@@ -13,7 +13,7 @@ describe('Request', function(){
 	});
 
 	it('should call an ajax request with the url of the page and throw no error if no url is defined', function(){
-		
+
 		var request = this.request = new Request({
 			onComplete: this.spy
 		});
@@ -22,13 +22,13 @@ describe('Request', function(){
 				'__response': '<root><node>value</node></root>', '__type': 'xml'
 			}});
 		}).not.toThrow('Component returned failure code: 0x80070057 (NS_ERROR_ILLEGAL_VALUE) [nsIXMLHttpRequest.open]');
-		
+
 	});
 
 	it('should create an ajax request with the response forced to be of type text', function(){
-		
+
 		var responseText = 'response';
-		
+
 		runs(function(){
 			this.request = new Request({
 				type: 'text',
@@ -38,22 +38,22 @@ describe('Request', function(){
 				'__response': responseText, '__type': 'text'
 			}});
 		});
-		
+
 		waitsFor(800, function(){
 			return this.spy.wasCalled;
 		});
-		
+
 		runs(function(){
 			expect(this.spy).toHaveBeenCalledWith(responseText, this.request.response.xml);
 		});
-		
+
 	});
-	
-	
-	
-	
+
+
+
+
 	describe('html type', function(){
-	
+
 		it('should create an ajax request and detect the correct type of the response (html)', function(){
 
 			runs(function(){
@@ -75,8 +75,8 @@ describe('Request', function(){
 			});
 
 		});
-		
-		
+
+
 		it('should create an ajax request and correctly generate the tree response from a tr', function(){
 
 			runs(function(){
@@ -95,7 +95,7 @@ describe('Request', function(){
 			runs(function(){
 				var response = this.request.response;
 				expect(this.spy).toHaveBeenCalledWith(response.tree, response.html, response.javascript);
-				
+
 				var tr = response.tree[0], td = tr.firstChild;
 				expect(tr.tagName).toEqual('TR');
 				expect(td.tagName).toEqual('TD');
@@ -103,7 +103,7 @@ describe('Request', function(){
 			});
 
 		});
-		
+
 		it('should create an ajax request and correctly generate the tree response from options', function(){
 
 			runs(function(){
@@ -122,7 +122,7 @@ describe('Request', function(){
 			runs(function(){
 				var response = this.request.response;
 				expect(this.spy).toHaveBeenCalledWith(response.tree, response.html, response.javascript);
-				
+
 				expect(response.tree.length).toEqual(3);
 				var option = response.tree[0];
 				expect(option.tagName).toEqual('OPTION');
@@ -130,14 +130,14 @@ describe('Request', function(){
 			});
 
 		});
-		
+
 	});
-	
-	
-	
-	
+
+
+
+
 	describe('json type', function(){
-	
+
 		it('should create an ajax request and detect the correct type of the response (json)', function(){
 
 			runs(function(){
@@ -148,21 +148,21 @@ describe('Request', function(){
 					'__response': '{"some": "json"}', '__type': 'json'
 				}});
 			});
-		
+
 			waitsFor(800, function(){
 				return this.spy.wasCalled;
 			});
-		
+
 			runs(function(){
 				expect(this.spy).toHaveBeenCalledWith({'some': 'json'}, '{"some": "json"}');
 			});
-		
+
 		});
-	
+
 		it('should return a json object independently of the mime type of the response', function(){
-		
+
 			var responseText = '{"json": "obj"}';
-		
+
 			runs(function(){
 				this.request = new Request({
 					url: '../Helpers/request.php',
@@ -172,23 +172,23 @@ describe('Request', function(){
 					'__response': responseText, '__type': 'xml'
 				}});
 			});
-		
+
 			waitsFor(800, function(){
 				return this.spy.wasCalled;
 			});
-		
+
 			runs(function(){
 				var response = this.request.response;
 				expect(this.spy).toHaveBeenCalledWith(response.json, responseText);
 			});
-		
+
 		});
-	
+
 		it('should fire an exception event because the json is invalid', function(){
-		
+
 			this.exception = jasmine.createSpy();
 			var responseText = "{invalid: json}"; // invalid json object
-		
+
 			runs(function(){
 				this.request = new Request({
 					url: '../Helpers/request.php',
@@ -198,27 +198,27 @@ describe('Request', function(){
 					'__response': responseText, '__type': 'json'
 				}});
 			});
-		
+
 			waitsFor(800, function(){
 				return this.spy.wasCalled;
 			});
-		
+
 			runs(function(){
 				var response = this.request.response;
 				expect(this.spy).toHaveBeenCalledWith(response.json, responseText);
 				expect(response.json).toEqual(null);
 				expect(this.exception).toHaveBeenCalled();
 			});
-		
+
 		});
-		
+
 	});
-	
-	
-	
-	
+
+
+
+
 	describe('script type', function(){
-		
+
 		it('should create an ajax request and detect the correct type of the response (script)', function(){
 
 			runs(function(){
@@ -241,18 +241,18 @@ describe('Request', function(){
 			});
 
 		});
-		
+
 	});
-	
-	
-	
-	
+
+
+
+
 	describe('xml type', function(){
-	
+
 		it('should create an ajax request and detect the correct type of the response (xml)', function(){
-		
+
 			var responseText = '<root><node>value</node></root>';
-		
+
 			runs(function(){
 				this.request = new Request({
 					url: '../Helpers/request.php',
@@ -261,22 +261,22 @@ describe('Request', function(){
 					'__response': responseText, '__type': 'xml'
 				}});
 			});
-		
+
 			waitsFor(800, function(){
 				return this.spy.wasCalled;
 			});
-		
+
 			runs(function(){
 				var response = this.request.response;
 				expect(this.spy).toHaveBeenCalledWith(response.xml, responseText);
 			});
-		
+
 		});
-	
+
 		it('should return a xml document independently of the mime type of the response, twice to test parseXML', function(){
-		
+
 			var responseText = '<root><node>value</node></root>';
-		
+
 			runs(function(){
 				this.request = new Request({
 					url: '../Helpers/request.php',
@@ -286,39 +286,39 @@ describe('Request', function(){
 					'__response': responseText, '__type': 'json'
 				}});
 			});
-		
+
 			waitsFor(800, function(){
 				return this.spy.wasCalled;
 			});
-		
+
 			runs(function(){
 				var response = this.request.response;
 				expect(this.spy).toHaveBeenCalledWith(response.xml, responseText);
 				expect(response.xml.documentElement.nodeName).toEqual('root');
-			
+
 				responseText = '<root1><node>value</node></root1>';
 				this.request.send({data: {
 					'__response': responseText, '__type': 'html'
 				}});
 			});
-		
+
 			waitsFor(800, function(){
 				return this.spy.callCount == 2;
 			});
-		
+
 			runs(function(){
 				var response = this.request.response;
 				expect(this.spy).toHaveBeenCalledWith(response.xml, responseText);
 				expect(response.xml.documentElement.nodeName).toEqual('root1');
 			});
-		
+
 		});
-	
+
 		it('should fire an exception event because the xml is invalid', function(){
-		
+
 			this.exception = jasmine.createSpy();
 			var responseText = '<root><node>value</node></root><root1></root1>'; // invalid xml (2 root nodes)
-		
+
 			runs(function(){
 				this.request = new Request({
 					url: '../Helpers/request.php',
@@ -328,31 +328,31 @@ describe('Request', function(){
 					'__response': responseText, '__type': 'xml'
 				}});
 			});
-		
+
 			waitsFor(800, function(){
 				return this.spy.wasCalled;
 			});
-		
+
 			runs(function(){
 				var response = this.request.response;
 				expect(this.spy).toHaveBeenCalledWith(response.xml, responseText);
 				expect(response.xml).toEqual(null);
 				expect(this.exception).toHaveBeenCalled();
 			});
-		
+
 		});
-	
+
 	});
-	
-	
-	
-	
+
+
+
+
 	describe('link option', function(){
-	
+
 		it('should create an ajax request and chain the other calls', function(){
-		
+
 			var responseText = 'response chain';
-			
+
 			runs(function(){
 				var self = this;
 				this.request = new Request({
@@ -366,11 +366,11 @@ describe('Request', function(){
 					'__type': 'text', '__response': responseText + 1
 				}}).chain(this.spy);
 			});
-		
+
 			waitsFor(800, function(){
 				return this.spy.callCount == 5;
 			});
-		
+
 			runs(function(){
 				var response = this.request.response;
 				expect(this.spy.calls[0].args).toEqual([responseText, null]); // first complete call
@@ -380,13 +380,13 @@ describe('Request', function(){
 				expect(this.spy).toHaveBeenCalledWith(); // chained call
 				expect(response.text).toEqual(responseText + 1);
 			});
-		
+
 		});
 
 		it('should create an ajax request canceling the current runing one', function(){
-		
+
 			var responseText = 'response';
-		
+
 			runs(function(){
 				this.request = new Request({
 					url: '../Helpers/request.php',
@@ -398,22 +398,22 @@ describe('Request', function(){
 					'__sleep': 0.2, '__type': 'text', '__response': responseText + 1
 				}});
 			});
-		
+
 			waitsFor(800, function(){
 				return this.spy.wasCalled;
 			});
-		
+
 			runs(function(){
 				var response = this.request.response;
 				expect(this.spy).toHaveBeenCalledWith(responseText + 1, null);
 			});
-		
+
 		});
-		
+
 		it('should create an ajax request ignoring the others that are called while theres one running', function(){
-		
+
 			var responseText = 'response';
-		
+
 			runs(function(){
 				this.request = new Request({
 					url: '../Helpers/request.php',
@@ -425,32 +425,32 @@ describe('Request', function(){
 					'__sleep': 0.2, '__type': 'text', '__response': responseText + 1
 				}});
 			});
-		
+
 			waitsFor(800, function(){
 				return this.spy.wasCalled;
 			});
-		
+
 			runs(function(){
 				var response = this.request.response;
 				expect(this.spy).toHaveBeenCalledWith(responseText, null);
 			});
-		
+
 		});
-		
+
 	});
-	
-	
-	
-	
+
+
+
+
 	describe('data option', function(){
-		
+
 		it('should send the data from a form element', function(){
-			
+
 			var form = new Element('form', {
 				'action': '',
 				'html': '<input name="input" value="input-value" /><input name="__type" value="text" />'
 			});
-			
+
 			runs(function(){
 				this.request = new Request({
 					method: 'post',
@@ -459,18 +459,18 @@ describe('Request', function(){
 					onComplete: this.spy
 				}).send();
 			});
-		
+
 			waitsFor(800, function(){
 				return this.spy.wasCalled;
 			});
-		
+
 			runs(function(){
 				expect(this.spy).toHaveBeenCalledWith('{"method":"post","post":{"input":"input-value"}}', null);
 			});
-			
+
 		});
-		
+
 	});
-	
+
 
 });

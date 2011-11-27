@@ -15,7 +15,7 @@ provides: [Elements.from]
 */
 
 (function(){
-	
+
 	var reFirstTag = /\s*<([^\s>]+)/;
 	var divContainer = new Element('div');
 	var translations = {
@@ -27,10 +27,10 @@ provides: [Elements.from]
 	translations.th = translations.td;
 	translations.optgroup = translations.option;
 	translations.thead = translations.tfoot = translations.tbody;
-	
+
 	Elements.extend('from', function(text, excludeScripts, filter){
 		if (excludeScripts === false) text = text.stripScripts();
-	
+
 		var match = text.match(reFirstTag),
 			firstTagTranslation = translations[match ? match[1].toLowerCase() : ''],
 			container = divContainer;
@@ -42,7 +42,7 @@ provides: [Elements.from]
 		} else {
 			container.set('html', text);
 		}
-	
+
 		return container.getElements(filter || '>');
 	});
 

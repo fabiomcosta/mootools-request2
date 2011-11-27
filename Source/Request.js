@@ -42,21 +42,21 @@ var Request = global.Request = new Class({
 		link: 'ignore',
 		urlEncoded: true,
 		encoding: 'UTF-8',
-		
-		
+
+
 		// this option shoudnt be a boolean because sometimes you need the scripts to be evaluated after
 		// you do some manipulation with the response.tree of response.html. The evaluation can be done
 		// 'after' or 'before' the onsuccess event. true will evaluate before for compatibility
 		// or maybe this options should just be remove for simplicity.
 		evalScripts: false,
-		
+
 		noCache: false,
-		
+
 		filter: '>', // children elements
 		appendData: '', // TODO
 		timeout: false, // TODO
 		type: null // 'script' or 'json' or 'xml' or 'html' or falsy value for autodetection
-		
+
 	},
 
 	initialize: function(options){
@@ -82,7 +82,7 @@ var Request = global.Request = new Class({
 			this.failure();
 		}
 	},
-	
+
 	success: function(text, xml){
 		var requestClass = this.$constructor, responseProcessor = this.responseProcessor;
 		responseProcessor = requestClass.responseProcessors[this.options.type || requestClass.contentTypes[this.getHeader('Content-Type')]];
@@ -157,12 +157,12 @@ var Request = global.Request = new Class({
 		//	data = (data) ? _method + '&' + data : _method;
 		//	method = 'post';
 		//}
-		
+
 		if (this.options.urlEncoded && method == 'post'){
 			var encoding = (this.options.encoding) ? '; charset=' + this.options.encoding : '';
 			this.setHeader('Content-Type', 'application/x-www-form-urlencoded' + encoding);
 		}
-		
+
 		if (this.options.noCache){
 			var noCache = 'noCache=' + new Date().getTime();
 			data = (data) ? noCache + '&' + data : noCache;
@@ -170,22 +170,22 @@ var Request = global.Request = new Class({
 
 		var trimPosition = url.lastIndexOf('/');
 		if (trimPosition > -1 && (trimPosition = url.indexOf('#')) > -1) url = url.substr(0, trimPosition);
-		
+
 		// http://www.w3.org/TR/XMLHttpRequest/#the-send-method
 		if (data && (method == 'get' || method == 'head')){
 			url = url + (url.contains('?') ? '&' : '?') + data;
 			data = null;
 		}
-		
+
 		this.setHeader('Accept', this.$constructor.acceptHeaders[this.options.type] || '*/*');
-		
+
 		return this.openRequest(method, url, data);
 	},
 
 	openRequest: function(method, url, data){
 		this.xhr.open(method.toUpperCase(), url, this.options.async);
 		this.xhr.onreadystatechange = this.onStateChange.bind(this);
-		
+
 		// firing an exception with a meaninful error message
 		var exception = this.$constructor.exception.SET_REQUEST_HEADER;
 		Object.each(this.headers, function(value, key){
@@ -197,7 +197,7 @@ var Request = global.Request = new Class({
 		}, this);
 
 		this.fireEvent('request');
-		
+
 		this.xhr.send(data);
 		if (!this.options.async) this.onStateChange();
 		return this;
@@ -212,9 +212,9 @@ var Request = global.Request = new Class({
 		this.fireEvent('cancel');
 		return this;
 	},
-	
+
 	parseXML: (function(){
-		
+
 		if (global.DOMParser){
 			var domParser = new DOMParser();
 			return function(text){
@@ -228,7 +228,7 @@ var Request = global.Request = new Class({
 			return new ActiveXObject('Microsoft.XMLDOM');
 		});
 		if (xml) xml.async = 'false';
-		
+
 		return function(text){
 			if (xml){
 				xml.loadXML(text);
@@ -258,7 +258,7 @@ var Request = global.Request = new Class({
 	responseProcessors: {},
 	contentTypes: {},
 	acceptHeaders: {},
-	
+
 	defineResponseType: function(type, options){
 		contentTypes = Array.from(options.contentTypes);
 		for (var i = contentTypes.length; i--;) this.contentTypes[contentTypes[i]] = type;
@@ -266,9 +266,9 @@ var Request = global.Request = new Class({
 		this.responseProcessors[type] = options.processor;
 		return this;
 	}
-	
+
 }).defineResponseType('json', {
-	
+
 	contentTypes: 'application/json',
 	processor: function(text){
 
@@ -280,11 +280,11 @@ var Request = global.Request = new Class({
 			this.fireEvent('exception', [exception.status, exception.message.substitute([e || ''])]);
 		}
 		this.onSuccess(json, text);
-		
+
 	}
-	
+
 }).defineResponseType('xml', {
-	
+
 	contentTypes: ['text/xml', 'application/xml'],
 	processor: function(text, xml){
 
@@ -293,7 +293,7 @@ var Request = global.Request = new Class({
 			xml = this.parseXML(text);
 			root = xml && xml.documentElement;
 		}
-		
+
 		if (xml){
 			var parseError = xml.parseError;
 			var firstChild = root && root.firstChild;
@@ -310,9 +310,9 @@ var Request = global.Request = new Class({
 		this.onSuccess(xml, text);
 
 	}
-	
+
 }).defineResponseType('html', {
-	
+
 	contentTypes: ['text/html', 'application/html'],
 	processor: function(text){
 
@@ -320,7 +320,7 @@ var Request = global.Request = new Class({
 
 		response.html = text.stripScripts(function(script){
 			response.javascript = script;
-		}); 
+		});
 
 		var match = response.html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
 		if (match) response.html = match[1];
@@ -335,9 +335,9 @@ var Request = global.Request = new Class({
 		if (evalScripts == 'after') Browser.exec(response.javascript);
 
 	}
-	
+
 }).defineResponseType('script', {
-	
+
 	contentTypes: ['text/javascript', 'application/javascript', 'application/x-javascript'],
 	processor: function(text){
 
@@ -346,7 +346,7 @@ var Request = global.Request = new Class({
 		this.onSuccess(text);
 
 	}
-	
+
 });
 
 
