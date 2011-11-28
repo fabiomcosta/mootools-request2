@@ -30,7 +30,7 @@ Configuration.source = {
 	'core-1.4': {
 		'path': '../Source/',
 		'files': [
-			'Mootools-1.3dev', 'Elements.From', 'Request',
+			'mootools-core-1.4.1-full-nocompat', 'Elements.From', 'Request',
 		]
 	}
 };
