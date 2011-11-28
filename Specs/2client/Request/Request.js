@@ -20,7 +20,7 @@ describe('Request', function(){
 		});
 		expect(function(){
 			request.send({data: {
-				'__response': '<root><node>value</node></root>', '__type': 'xml'
+				'__body': '<root><node>value</node></root>', '__type': 'xml'
 			}});
 		}).not.toThrow('Component returned failure code: 0x80070057 (NS_ERROR_ILLEGAL_VALUE) [nsIXMLHttpRequest.open]');
 
@@ -36,7 +36,7 @@ describe('Request', function(){
 				url: this.server,
 				onComplete: this.spy
 			}).send({data: {
-				'__response': responseText, '__type': 'text'
+				'__body': responseText, '__type': 'text'
 			}});
 		});
 
@@ -57,10 +57,10 @@ describe('Request', function(){
 
 			runs(function(){
 				this.request = new Request({
-					url: '../Helpers/request.php',
+					url: this.server,
 					onComplete: this.spy
 				}).send({data: {
-					'__response': '<body><div></div></body>', '__type': 'html'
+					'__body': '<body><div></div></body>', '__type': 'html'
 				}});
 			});
 
@@ -80,10 +80,10 @@ describe('Request', function(){
 
 			runs(function(){
 				this.request = new Request({
-					url: '../Helpers/request.php',
+					url: this.server,
 					onComplete: this.spy
 				}).send({data: {
-					'__response': '<tr><td>text</td></tr>', '__type': 'html'
+					'__body': '<tr><td>text</td></tr>', '__type': 'html'
 				}});
 			});
 
@@ -107,10 +107,10 @@ describe('Request', function(){
 
 			runs(function(){
 				this.request = new Request({
-					url: '../Helpers/request.php',
+					url: this.server,
 					onComplete: this.spy
 				}).send({data: {
-					'__response': '<option>1</option><option>2</option><option>3</option>', '__type': 'html'
+					'__body': '<option>1</option><option>2</option><option>3</option>', '__type': 'html'
 				}});
 			});
 
@@ -141,10 +141,10 @@ describe('Request', function(){
 
 			runs(function(){
 				this.request = new Request({
-					url: '../Helpers/request.php',
+					url: this.server,
 					onComplete: this.spy
 				}).send({data: {
-					'__response': '{"some": "json"}', '__type': 'json'
+					'__body': '{"some": "json"}', '__type': 'json'
 				}});
 			});
 
@@ -164,11 +164,11 @@ describe('Request', function(){
 
 			runs(function(){
 				this.request = new Request({
-					url: '../Helpers/request.php',
+					url: this.server,
 					type: 'json',
 					onComplete: this.spy
 				}).send({data: {
-					'__response': responseText, '__type': 'xml'
+					'__body': responseText, '__type': 'xml'
 				}});
 			});
 
@@ -190,11 +190,11 @@ describe('Request', function(){
 
 			runs(function(){
 				this.request = new Request({
-					url: '../Helpers/request.php',
+					url: this.server,
 					onComplete: this.spy,
 					onException: this.exception
 				}).send({data: {
-					'__response': responseText, '__type': 'json'
+					'__body': responseText, '__type': 'json'
 				}});
 			});
 
@@ -222,10 +222,10 @@ describe('Request', function(){
 
 			runs(function(){
 				this.request = new Request({
-					url: '../Helpers/request.php',
+					url: this.server,
 					onComplete: this.spy
 				}).send({data: {
-					'__response': 'var __global__var__ = 10;', '__type': 'script'
+					'__body': 'var __global__var__ = 10;', '__type': 'script'
 				}});
 			});
 
@@ -254,10 +254,10 @@ describe('Request', function(){
 
 			runs(function(){
 				this.request = new Request({
-					url: '../Helpers/request.php',
+					url: this.server,
 					onComplete: this.spy
 				}).send({data: {
-					'__response': responseText, '__type': 'xml'
+					'__body': responseText, '__type': 'xml'
 				}});
 			});
 
@@ -278,11 +278,11 @@ describe('Request', function(){
 
 			runs(function(){
 				this.request = new Request({
-					url: '../Helpers/request.php',
+					url: this.server,
 					type: 'xml',
 					onComplete: this.spy
 				}).send({data: {
-					'__response': responseText, '__type': 'json'
+					'__body': responseText, '__type': 'json'
 				}});
 			});
 
@@ -297,7 +297,7 @@ describe('Request', function(){
 
 				responseText = '<root1><node>value</node></root1>';
 				this.request.send({data: {
-					'__response': responseText, '__type': 'html'
+					'__body': responseText, '__type': 'html'
 				}});
 			});
 
@@ -320,11 +320,11 @@ describe('Request', function(){
 
 			runs(function(){
 				this.request = new Request({
-					url: '../Helpers/request.php',
+					url: this.server,
 					onComplete: this.spy,
 					onException: this.exception
 				}).send({data: {
-					'__response': responseText, '__type': 'xml'
+					'__body': responseText, '__type': 'xml'
 				}});
 			});
 
@@ -355,14 +355,14 @@ describe('Request', function(){
 			runs(function(){
 				var self = this;
 				this.request = new Request({
-					url: '../Helpers/request.php',
+					url: this.server,
 					link: 'chain',
 					onComplete: this.spy,
 					onSuccess: this.spy
 				}).send({data: {
-					'__type': 'text', '__response': responseText
+					'__type': 'text', '__body': responseText
 				}}).send({data: {
-					'__type': 'text', '__response': responseText + 1
+					'__type': 'text', '__body': responseText + 1
 				}}).chain(this.spy);
 			});
 
@@ -388,13 +388,13 @@ describe('Request', function(){
 
 			runs(function(){
 				this.request = new Request({
-					url: '../Helpers/request.php',
+					url: this.server,
 					link: 'cancel',
 					onComplete: this.spy
 				}).send({data: {
-					'__sleep': 0.2, '__type': 'text', '__response': responseText
+					'__sleep': 0.2, '__type': 'text', '__body': responseText
 				}}).send({data: {
-					'__sleep': 0.2, '__type': 'text', '__response': responseText + 1
+					'__sleep': 0.2, '__type': 'text', '__body': responseText + 1
 				}});
 			});
 
@@ -415,13 +415,13 @@ describe('Request', function(){
 
 			runs(function(){
 				this.request = new Request({
-					url: '../Helpers/request.php',
+					url: this.server,
 					link: 'ignore',
 					onComplete: this.spy
 				}).send({data: {
-					'__sleep': 0.2, '__type': 'text', '__response': responseText
+					'__sleep': 0.2, '__type': 'text', '__body': responseText
 				}}).send({data: {
-					'__sleep': 0.2, '__type': 'text', '__response': responseText + 1
+					'__sleep': 0.2, '__type': 'text', '__body': responseText + 1
 				}});
 			});
 
@@ -439,8 +439,6 @@ describe('Request', function(){
 	});
 
 
-
-
 	describe('data option', function(){
 
 		it('should send the data from a form element', function(){
@@ -453,7 +451,7 @@ describe('Request', function(){
 			runs(function(){
 				this.request = new Request({
 					method: 'post',
-					url: '../Helpers/request.php',
+					url: this.server,
 					data: form,
 					onComplete: this.spy
 				}).send();
@@ -468,8 +466,5 @@ describe('Request', function(){
 			});
 
 		});
-
 	});
-
-
 });
