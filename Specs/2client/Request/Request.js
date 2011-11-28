@@ -392,9 +392,9 @@ describe('Request', function(){
 					link: 'cancel',
 					onComplete: this.spy
 				}).send({data: {
-					'__sleep': 0.2, '__type': 'text', '__body': responseText
+					'__sleep': 200, '__type': 'text', '__body': responseText
 				}}).send({data: {
-					'__sleep': 0.2, '__type': 'text', '__body': responseText + 1
+					'__sleep': 200, '__type': 'text', '__body': responseText + 1
 				}});
 			});
 
@@ -419,9 +419,9 @@ describe('Request', function(){
 					link: 'ignore',
 					onComplete: this.spy
 				}).send({data: {
-					'__sleep': 0.2, '__type': 'text', '__body': responseText
+					'__sleep': 200, '__type': 'text', '__body': responseText
 				}}).send({data: {
-					'__sleep': 0.2, '__type': 'text', '__body': responseText + 1
+					'__sleep': 200, '__type': 'text', '__body': responseText + 1
 				}});
 			});
 

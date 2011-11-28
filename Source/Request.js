@@ -44,7 +44,7 @@ var Request = global.Request = new Class({
 		encoding: 'UTF-8',
 
 
-		// this option shoudnt be a boolean because sometimes you need the scripts to be evaluated after
+		// this option shouldnt be a boolean because sometimes you need the scripts to be evaluated after
 		// you do some manipulation with the response.tree of response.html. The evaluation can be done
 		// 'after' or 'before' the onsuccess event. true will evaluate before for compatibility
 		// or maybe this options should just be remove for simplicity.
@@ -84,11 +84,11 @@ var Request = global.Request = new Class({
 	},
 
 	success: function(text, xml){
-		var requestClass = this.$constructor, responseProcessor = this.responseProcessor;
-		responseProcessor = requestClass.responseProcessors[this.options.type || requestClass.contentTypes[this.getHeader('Content-Type')]];
+		var requestClass = this.$constructor;
+		responseParser = requestClass.responseParsers[this.options.type || requestClass.contentTypes[this.getHeader('Content-Type')]];
 
-		if (responseProcessor){
-			responseProcessor.call(this, text, xml);
+		if (responseParser){
+			responseParser.call(this, text, xml);
 		} else {
 			this.onSuccess(text, xml);
 		}
@@ -255,22 +255,22 @@ var Request = global.Request = new Class({
 		}
 	},
 
-	responseProcessors: {},
+	responseParsers: {},
 	contentTypes: {},
 	acceptHeaders: {},
 
 	defineResponseType: function(type, options){
-		contentTypes = Array.from(options.contentTypes);
+		var contentTypes = Array.from(options.contentTypes);
 		for (var i = contentTypes.length; i--;) this.contentTypes[contentTypes[i]] = type;
 		this.acceptHeaders[type] = contentTypes.join(', ') + ', */*';
-		this.responseProcessors[type] = options.processor;
+		this.responseParsers[type] = options.parser;
 		return this;
 	}
 
 }).defineResponseType('json', {
 
 	contentTypes: 'application/json',
-	processor: function(text){
+	parser: function(text){
 
 		var secure = this.options.secure, json;
 		try {
@@ -286,7 +286,7 @@ var Request = global.Request = new Class({
 }).defineResponseType('xml', {
 
 	contentTypes: ['text/xml', 'application/xml'],
-	processor: function(text, xml){
+	parser: function(text, xml){
 
 		var root = xml && xml.documentElement;
 		if (!xml || !root){
@@ -314,7 +314,7 @@ var Request = global.Request = new Class({
 }).defineResponseType('html', {
 
 	contentTypes: ['text/html', 'application/html'],
-	processor: function(text){
+	parser: function(text){
 
 		var options = this.options, response = this.response;
 
@@ -339,7 +339,7 @@ var Request = global.Request = new Class({
 }).defineResponseType('script', {
 
 	contentTypes: ['text/javascript', 'application/javascript', 'application/x-javascript'],
-	processor: function(text){
+	parser: function(text){
 
 		// no need for evalResponse anymore
 		Browser.exec(text);
