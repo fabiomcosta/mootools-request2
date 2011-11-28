@@ -17,6 +17,9 @@ provides: Request
 (function(global, document){
 
 var baseMethods = {'get': 1, 'post': 1};
+var log = function(message) {
+	global.console && console.log(message);
+};
 
 var Request = global.Request = new Class({
 
@@ -27,8 +30,8 @@ var Request = global.Request = new Class({
 		onComplete: ,
 		onCancel: ,
 		onSuccess: ,
-		onFailure: ,
-		onException: ,*/
+		onFailure: ,*/
+		onException: log,
 		isSuccess: function(){
 			return ((this.status >= 200) && (this.status < 300));
 		},
@@ -164,7 +167,7 @@ var Request = global.Request = new Class({
 		}
 
 		if (this.options.noCache){
-			var noCache = 'noCache=' + new Date().getTime();
+			var noCache = 'noCache=' + Date.now();
 			data = (data) ? noCache + '&' + data : noCache;
 		}
 
@@ -261,7 +264,9 @@ var Request = global.Request = new Class({
 
 	defineResponseType: function(type, options){
 		var contentTypes = Array.from(options.contentTypes);
-		for (var i = contentTypes.length; i--;) this.contentTypes[contentTypes[i]] = type;
+		for (var i = contentTypes.length; i--;){
+			this.contentTypes[contentTypes[i]] = type;
+		}
 		this.acceptHeaders[type] = contentTypes.join(', ') + ', */*';
 		this.responseParsers[type] = options.parser;
 		return this;
@@ -341,7 +346,7 @@ var Request = global.Request = new Class({
 	contentTypes: ['text/javascript', 'application/javascript', 'application/x-javascript'],
 	parser: function(text){
 
-		// no need for evalResponse anymore
+		// no need for the evalResponse option anymore
 		Browser.exec(text);
 		this.onSuccess(text);
 
