@@ -30,7 +30,8 @@ var Request = global.Request = new Class({
 		onComplete: ,
 		onCancel: ,
 		onSuccess: ,
-		onFailure: ,*/
+		onFailure: ,
+		onTimeout: ,*/
 		onException: log,
 		isSuccess: function(){
 			return ((this.status >= 200) && (this.status < 300));
@@ -46,7 +47,6 @@ var Request = global.Request = new Class({
 		urlEncoded: true,
 		encoding: 'UTF-8',
 
-
 		// this option shouldnt be a boolean because sometimes you need the scripts to be evaluated after
 		// you do some manipulation with the response.tree of response.html. The evaluation can be done
 		// 'after' or 'before' the onsuccess event. true will evaluate before for compatibility
@@ -54,11 +54,13 @@ var Request = global.Request = new Class({
 		evalScripts: false,
 
 		noCache: false,
-
 		filter: '>', // children elements
+		type: null, // 'script' or 'json' or 'xml' or 'html' or falsy value for autodetection
+
+		user: '', // TODO
+		password: '',// TODO
 		appendData: '', // TODO
-		timeout: false, // TODO
-		type: null // 'script' or 'json' or 'xml' or 'html' or falsy value for autodetection
+		timeout: 0 // TODO
 
 	},
 
