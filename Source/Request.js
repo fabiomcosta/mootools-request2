@@ -195,7 +195,7 @@ var Request = global.Request = new Class({
 			try {
 				this.xhr.setRequestHeader(key, value);
 			} catch (e){
-				this.fireEvent('exception', [exception.status, exception.message.substitue([key, value])]);
+				this.fireEvent('exception', [exception.substitue([key, value])]);
 			}
 		}, this);
 
@@ -244,18 +244,9 @@ var Request = global.Request = new Class({
 }).extend({
 
 	exception: {
-		SET_REQUEST_HEADER: {
-			status: 1,
-			message: 'Error while setting the Request Header {0} => {1}'
-		},
-		XML_PARSING: {
-			status: 2,
-			message: 'Error while parsing the XML response: {0}'
-		},
-		JSON_PARSING: {
-			status: 3,
-			message: 'Error while parsing the JSON response: {0}'
-		}
+		SET_REQUEST_HEADER: 'Error while setting the Request Header {0} => {1}',
+		XML_PARSING: 'Error while parsing the XML response: {0}',
+		JSON_PARSING: 'Error while parsing the JSON response: {0}'
 	},
 
 	responseParsers: {},
@@ -282,7 +273,7 @@ var Request = global.Request = new Class({
 			json = this.response.json = JSON.decode(text, secure);
 		} catch (e){
 			var exception = this.$constructor.exception.JSON_PARSING;
-			this.fireEvent('exception', [exception.status, exception.message.substitute([e || ''])]);
+			this.fireEvent('exception', [exception.substitute([e || ''])]);
 		}
 		this.onSuccess(json, text);
 
@@ -306,7 +297,7 @@ var Request = global.Request = new Class({
 				(parseError && parseError.reason) ? parseError.reason : '';
 			if (!root || errorMsg){
 				var exception = this.$constructor.exception.XML_PARSING;
-				this.fireEvent('exception', [exception.status, exception.message.substitute([errorMsg])]);
+				this.fireEvent('exception', [exception.substitute([errorMsg])]);
 				xml = null;
 			}
 		}
