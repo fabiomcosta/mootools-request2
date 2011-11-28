@@ -46,5 +46,5 @@ app.all('/', function(req, res){
 });
 
 app.listen(3000);
-console.log('Test server listening on port 3000, http://localhost:3000/Specs/Runner/');
+console.log('Access http://localhost:3000/Specs/Runner/ to run specs');
 
