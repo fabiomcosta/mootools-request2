@@ -1,10 +1,8 @@
-test: setup
-
 setup:
 	@git submodule update --init --recursive
-	@npm install --dev .
+	@npm install express@2.5.1
 
-server:
+test:
 	@node Specs/Helpers/request
 
 update_submodules:
