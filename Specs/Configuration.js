@@ -2,32 +2,37 @@
 
 var Configuration = context.Configuration = {};
 
-Configuration.name = 'Request for Mootools 2',
+Configuration.name = 'Request for Mootools 1.5';
 
-Configuration.presets = [
-	{
-		version: '2',
-		path: '../',
-		specs: ['2client']
+Configuration.defaultPresets = {
+	browser: 'core-1.4',
+	nodejs: 'core-1.4',
+	jstd: 'core-1.4'
+};
+
+Configuration.presets = {
+	'core-1.4': {
+		sets: ['core-1.4'],
+		source: ['core-1.4']
 	}
-];
+};
 
 Configuration.sets = {
-
-	'2client': [
-		'Request/Request'
-	]
-
+	'core-1.4': {
+		path: '2client/',
+		files: [
+			'Request/Request'
+		]
+	}
 };
 
 Configuration.source = {
-
-	'2': {
-		'client': [
+	'core-1.4': {
+		'path': '../Source/',
+		'files': [
 			'Mootools-1.3dev', 'Elements.From', 'Request',
 		]
 	}
-
 };
 
 })(typeof exports != 'undefined' ? exports : this);
