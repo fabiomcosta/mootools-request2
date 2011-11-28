@@ -9,12 +9,13 @@ License:
 describe('Request', function(){
 
 	beforeEach(function(){
+		this.server = 'http://localhost:3000/';
 		this.spy = jasmine.createSpy();
 	});
 
 	it('should call an ajax request with the url of the page and throw no error if no url is defined', function(){
 
-		var request = this.request = new Request({
+		var request = new Request({
 			onComplete: this.spy
 		});
 		expect(function(){
@@ -32,7 +33,7 @@ describe('Request', function(){
 		runs(function(){
 			this.request = new Request({
 				type: 'text',
-				url: '../Helpers/request.php',
+				url: this.server,
 				onComplete: this.spy
 			}).send({data: {
 				'__response': responseText, '__type': 'text'
@@ -48,8 +49,6 @@ describe('Request', function(){
 		});
 
 	});
-
-
 
 
 	describe('html type', function(){

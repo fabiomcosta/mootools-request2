@@ -1,0 +1,13 @@
+{
+    "name": "mootools-request2"
+  , "version": "0.0.1"
+  , "description": "new Request module for Mootools"
+  , "keywords": ["http", "ajax", "request", "mootools"]
+  , "author": "Fabio Miranda Costa <fabiomcosta@gmail.com>"
+  , "devDependencies": {
+      "express": "2.5.0"
+  }
+  , "engines": { "node": ">= 0.4.0 < 0.7.0" }
+}
+
+
